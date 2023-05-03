@@ -29,7 +29,11 @@ files related to the virtual environment.
 "src" directory: Contains source code files
 "data" directory: Contains data files
 
+__________________________________
+PYTHON AND GITHUB
 
-
+- Push to master, not to main
+- Main approves pull request later on
+- Pycharm has Git integration
 
 
