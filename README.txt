@@ -36,4 +36,6 @@ PYTHON AND GITHUB
 - Main approves pull request later on
 - Pycharm has Git integration
 
-
+----------------------------------
+Pygame
+- Installed pygame-ce because pygame was not compatible with my python version
