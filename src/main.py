@@ -1,7 +1,6 @@
 import pygame, sys
 #from controller.controllerClass import *
 #from controller import controllerClass
-import controller_components
 from settings import *
 from game_states.stateTitle import StateTitle
 
