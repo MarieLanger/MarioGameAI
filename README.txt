@@ -3,13 +3,7 @@ FOLDER STRUCTURE EXPLANATION
 In PyCharm, the "Include", "Lib" and "Scripts" folders are typically
 associated with a virtual environment created using the "venv" module in Python.
 
-The "Include" folder contains header files needed for compiling C extensions for
-the Python interpreter.
-
-The "Lib" folder contains standard library modules and packages for Python.
-
-The "Scripts" folder contains executable scripts, such as the "activate" script
-used to activate the virtual environment.
+The "Include" folder contains header files needed for compiling C extensions for the Python interpreter. The "Lib" folder contains standard library modules and packages for Python. The "Scripts" folder contains executable scripts, such as the "activate" script used to activate the virtual environment.
 
 When you create a new virtual environment in PyCharm, it creates a folder
 structure that includes these folders along with other necessary files and
@@ -28,6 +22,10 @@ files related to the virtual environment.
 
 "src" directory: Contains source code files
 "data" directory: Contains data files
+__________________________________
+- The Game()-class contains a StateMachine, which keeps track of all the states that the game could be in.
+- In every iteration of the game loop, it reads the top state and calls their handleInputs() and display() methods.
+- Hence, every concrete State should inherit from thr State() class (StateTitle() and StateGame() do inherit e.g.)
 
 __________________________________
 PYTHON AND GITHUB
