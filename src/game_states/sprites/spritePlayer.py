@@ -17,6 +17,7 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.rect.topleft = (x_pos,y_pos)
 
 
+
     def update(self):
         """
         What sprites do on their own, independent of player inputs

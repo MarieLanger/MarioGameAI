@@ -37,7 +37,7 @@ class StateGame(State):
 
 
 
-        # Pygame only detects when keys got pressed or released, but not when they stay held
+        # Pygame only detects when keys got pressed or released, but not when they stay held -----
         # This is a workaround around this
         self.leftKeyHold = False
         self.rightKeyHold = False
@@ -56,7 +56,8 @@ class StateGame(State):
         print("the shape of the level is:", self.levelMatrix.shape)
 
         # There can be maximally 13x25 tiles visible at 1 time (25 because 2 half tiles can be seen)
-        self.currentMatrix = self.levelMatrix[0:13, 0:25]
+        #self.currentMatrix = self.levelMatrix[0:13, 0:25]
+
 
         # How far the level got reached, in tiles
         # Initialized by 25: maximally we see the 25th tiles in x-dimension
@@ -65,27 +66,17 @@ class StateGame(State):
 
 
         # Create all the sprite objects -------------------------------------------------
+        # Creating the sprite groups
         self.all_sprites = pygame.sprite.Group()
-        self.all_sprites.add(SpriteTest())   #todo: remove this line later
         self.playerSprites = pygame.sprite.Group()
+
+        # Actually creating the first sprites at the start of the level + adding them into a group
 
         # The player sees 13x24 tiles at once
         for col in range(24):
-
             self._loadSpriteColumn(self.levelMatrix[:,col],col)
-            """for row in range(13):
-                print("currently in y:",row,"  and x:",col)
 
-                # If block
-                if self.levelMatrix[row,col]==1:
-                    print("adding sprite: (y/x)  (",row, col,")")
-                    self.all_sprites.add(SpriteBlock(row*16*2,col*16*2))
-                # If player
-                if self.levelMatrix[row,col]==2:
-                    print("added player")
-                    self.playerSprites.add(SpritePlayer(row*16*2,col*16*2))
-                    #self.all_sprites.add(self.player)"""
-
+        self.all_sprites.add(SpriteTest())   #todo: remove this line later
 
 
 
@@ -120,10 +111,7 @@ class StateGame(State):
 
 
         # Use noted down inputs to change model ------------------------------------
-
         self._borderHandling()
-
-
 
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
@@ -133,55 +121,6 @@ class StateGame(State):
 
 
 
-    def returnLocation(self,sprite):
-        """
-        :param sprite: A sprite who wants to get its y and x position in currentMatrix
-        :return: returns the y or x location
-        """
-
-        #todo: Each sprite has an itentifier and in currentMatrix there are identifiers
-        # Each sprite then asks the stateGame to return the index of the identifier
-
-        (x,y) = np.where(self.currentMatrix == sprite)
-        return (y,x)
-
-    #todo: we need 3 methods
-    # - Asking the game for the sprite's own y and x
-    # - Asking the game what type of sprite is in a certain (y,x)
-    #       the game has to hold a dictionary of map(index --> sprite-reference)
-    # - Asking the game to write in a certain (y,x)
-
-    """
-    Todo: No, we only need 2 methods
-    
-    getSpriteListAtPos(index,pos): has e.g. pos:(-2,4) as input and game returns the list of sprites-references in there
-    starting from the position of the sprite with INDEX
-    
-    moveSprite(index,pos): moves sprite with a certain index pos-wise
-    
-    """
-
-    """
-    import numpy as np
-
-    class Test():
-        pass
-        
-    a = np.array([Test() for _ in range(9)]).reshape((3, 3))
-    
-    
-    #a = np.zeros((3, 3))
-    
-    a1 = Test()
-    a2 = Test()
-    
-    a[1,2] = a1
-    a[2,2] = a2
-    
-    print(a)
-    
-    print(np.where(a == a2)[0])
-    """
 
 
 
@@ -191,32 +130,14 @@ class StateGame(State):
             # Reset tile position
             self.tilePos=0
 
-            #todo: update self.currentMatrix
-            # Increase the level progress
-
-
-            # shuffle matrix
-            print(self.currentMatrix)
-
-            # Shift all entries of matrix 1 position to the left
-            self.currentMatrix = np.roll(self.currentMatrix, -1, axis=1)
-
-            #load new entries
-            self.currentMatrix[:,-1] = self.levelMatrix[:,self.levelProgress]
-
-            #create sprites
+            #create between 0 and 13 new sprites
+            # The 23 means "create it at column 23 on the screen"
             self._loadSpriteColumn(self.levelMatrix[:,self.levelProgress],23)
 
 
-
-
-
+            # Increase the level progress
             self.levelProgress += 1
-            print(self.currentMatrix)
 
-
-
-            #todo: load 13 new sprites
             #todo: delete 13 old sprites
 
 
@@ -269,6 +190,7 @@ class StateGame(State):
 
     def _loadSpriteColumn(self, column,columnIndex):
         """
+        Creates new sprites for 1 new column.
 
         :param column: 1 column with values (=a 13x1 matrix)
         columnID: Index of column in level-matrix
@@ -277,15 +199,26 @@ class StateGame(State):
         for row in range(13):
             #print("currently in y:",row,"  and x:",col)
 
-            # If block
-            if column[row]==1:
-                #("adding sprite: (y/x)  (",row, col,")")
-                self.all_sprites.add(SpriteBlock(row*16*2,columnIndex*16*2))
-            # If player
-            if column[row]==2:
-                print("added player")
-                self.playerSprites.add(SpritePlayer(row*16*2,columnIndex*16*2))
-                #self.all_sprites.add(self.player)
+            # If not 0, then a sprite has to be loaded
+            if column[row] != 0:
+
+                # Initialize reference for later
+                new_sprite = None
+
+                # CREAING THE SPRITE
+                if column[row] == 1:  # If block
+                    new_sprite = SpriteBlock(row*16*2,columnIndex*16*2)
+                    self.all_sprites.add(new_sprite)
+                if column[row] == 2:  # If player
+                    print("added player")
+                    new_sprite = SpritePlayer(row*16*2,columnIndex*16*2)
+                    self.playerSprites.add(new_sprite)
+                    #self.all_sprites.add(self.player)
+
+
+
+
+
 
 
 
