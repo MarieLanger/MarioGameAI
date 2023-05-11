@@ -110,7 +110,7 @@ class StateGame(State):
                     self.upKeyHold = False
 
 
-        # Use noted down inputs to change model ------------------------------------
+        # Use noted down inputs to change model --------------------------------------
         self._borderHandling()
 
 
