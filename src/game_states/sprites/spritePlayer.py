@@ -24,17 +24,15 @@ class SpritePlayer(pygame.sprite.Sprite):
         # 2 rects are like a cross!
         self.collideRectV = self.CollideRect(32, 34)
         self.collideRectH = self.CollideRect(34, 32)
+        self.collideRect = self.CollideRect(34,34)
         self.collideRectH.rect.center = self.rect.center
         self.collideRectV.rect.center = self.rect.center
+        self.collideRect.rect.center = self.rect.center
         # https://stackoverflow.com/questions/28805271/pygame-rect-collision-smaller-than-image
 
         # Only allow to jump for a certain number of frames
         self.jumpCounter = 0
 
-        # todo: Do I need this?
-        # player needs to have a rect that's 1 pixel bigger than itself
-        self.collideRect = pygame.Rect(0, 0, 34, 34)
-        self.collideRect.center = self.rect.center
 
         # todo: Do I need this?
         self.blockGroup = blockgroup
@@ -47,6 +45,9 @@ class SpritePlayer(pygame.sprite.Sprite):
         """
         What sprites do on their own, independent of player inputs
         """
+
+
+        
 
         if self.jumpCounter > 0:
             self.jump()
@@ -62,16 +63,19 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.rect.x -= 2
         self.collideRectH.rect.x -= 2
         self.collideRectV.rect.x -= 2
+        self.collideRect.rect.x -= 2
 
     def moveRight(self):
         self.rect.x += 2
         self.collideRectH.rect.x += 2
         self.collideRectV.rect.x += 2
+        self.collideRect.rect.x += 2
 
     def jump(self):
         self.rect.y -= 4
         self.collideRectH.rect.y -= 4
         self.collideRectV.rect.y -= 4
+        self.collideRect.rect.y -= 4
         self.jumpCounter += 1
 
     def applyGravity(self):
@@ -80,6 +84,7 @@ class SpritePlayer(pygame.sprite.Sprite):
             self.rect.y += 4
             self.collideRectH.rect.y += 4
             self.collideRectV.rect.y += 4
+            self.collideRect.rect.y += 4
 
     class CollideRect(pygame.sprite.Sprite):
         """
