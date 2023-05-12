@@ -45,6 +45,10 @@ class StateGame(State):
         self.rightKeyBlock = False
         self.leftKeyBlock = False
 
+        # note down old states
+        self.leftKeyOldState = None
+        self.rightKeyOldState = None
+
         # Load level ---------------------------------------------------------------------------
         # levelMatrix: A guide which sprites to create
         # currentMatrix: Updates when e.g. enemy positions change too
@@ -77,7 +81,6 @@ class StateGame(State):
             self._loadSpriteColumn(self.levelMatrix[:, col], col)
 
         self.all_sprites.add(SpriteTest())  # todo: remove this line later
-
 
     def handleInputs(self):
         # Note down inputs --------------------------------------------
@@ -112,6 +115,7 @@ class StateGame(State):
         # todo: The following could probably be structured better and written in a cleaner way
 
         # Calculate the collisions separately for horizontal/vertical collisions
+        collisionListTotal = pygame.sprite.spritecollide(self.player.collideRect, self.all_sprites, False)
         collisionListH = pygame.sprite.spritecollide(self.player.collideRectH, self.all_sprites, False)
         collisionListV = pygame.sprite.spritecollide(self.player.collideRectV, self.all_sprites, False)
 
@@ -123,7 +127,7 @@ class StateGame(State):
 
         # Calculate these
         for collidingSprite in collisionListH:
-            print("H col list exists")
+            # print("H col list exists")
             leftCol = (collidingSprite.rect.collidepoint(self.player.collideRectH.rect.bottomleft) or \
                        collidingSprite.rect.collidepoint(self.player.collideRectH.rect.topleft)) or \
                       collidingSprite.rect.collidepoint(self.player.collideRectH.rect.midleft)
@@ -132,7 +136,7 @@ class StateGame(State):
                        collidingSprite.rect.collidepoint(self.player.collideRectH.rect.midright)
 
         for collidingSprite in collisionListV:
-            print("V col list exists")
+            # print("V col list exists")
             topCol = collidingSprite.rect.collidepoint(self.player.collideRectV.rect.midtop) or \
                      collidingSprite.rect.collidepoint(self.player.collideRectV.rect.topleft) or \
                      collidingSprite.rect.collidepoint(self.player.collideRectV.rect.topright)
@@ -141,27 +145,28 @@ class StateGame(State):
                         collidingSprite.rect.collidepoint(self.player.collideRectV.rect.bottomright)
             # https://stackoverflow.com/questions/20180594/pygame-collision-by-sides-of-sprite
 
-        # If the player pressed left/right and there are left/right collisions,
-        # temporarily block left/right movement
-        # Note: I only block keys when a key actually got pressed!!
-        # Therefore, keyBlock= True is an indicator that the key got pressed!
-        if leftCol:
-            if self.leftKeyHold:
-                self.leftKeyBlock = True
-                self.leftKeyHold = False
-        else:
-            if self.leftKeyBlock:
-                self.leftKeyBlock = False
-                self.leftKeyHold = True
+        # When the H and V rects detected no collision and the rect detected 1 collision, then there is
+        # A touch on an edge!
+        union = collisionListV + collisionListH
+        if len(collisionListTotal) == 1 and len(union) == 0:
+            for collidingSprite in collisionListTotal:
+                leftCol = collidingSprite.rect.collidepoint(self.player.collideRect.rect.topleft) or \
+                          collidingSprite.rect.collidepoint(self.player.collideRect.rect.bottomleft)
+                rightCol = collidingSprite.rect.collidepoint(self.player.collideRect.rect.topright) or \
+                           collidingSprite.rect.collidepoint(self.player.collideRect.rect.bottomright)
 
+
+        # HANDLE COLLISIONS ---------------------------------------------------------------------
+
+        # Idea: Never touch self.rightKeyHold, but alter the input to _borderHandling
+        keyinput_left = self.leftKeyHold
+        keyinput_right = self.rightKeyHold
         if rightCol:
             if self.rightKeyHold:
-                self.rightKeyBlock = True
-                self.rightKeyHold = False
-        else:
-            if self.rightKeyBlock:
-                self.rightKeyBlock = False
-                self.rightKeyHold = True
+                keyinput_right = False
+        if leftCol:
+            if self.leftKeyHold:
+                keyinput_left = False
 
         # Handle bottom/top collisions
         if bottomCol:
@@ -178,12 +183,10 @@ class StateGame(State):
             # I am not a quantum particle tunnel through an energy barrier
             self.player.jumpCounter = 0
 
-
-
         # todo: Collisions with enemies, coins, items, end flag -----------------------------------------------
 
         # I always have to handle borders -------------------------------------------------------------------
-        self._borderHandling()
+        self._borderHandling(keyinput_left, keyinput_right)
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
         # Update all sprites
@@ -209,7 +212,7 @@ class StateGame(State):
             # When sprites collide with that, remove the sprites from their respective group
             # Bam, done
 
-    def _borderHandling(self):
+    def _borderHandling(self, leftinput, rightinput):
         """
         This method deals with the logic that when peach is near a border, the level should not move anymore.
         Most of the time, peach stays at 1 x-position and the level moves.
@@ -219,14 +222,14 @@ class StateGame(State):
 
         # If the level moves + peach stays still
         if self.levelMoving:
-            if self.rightKeyHold:
+            if rightinput:
                 # For the right key, we move all sprites and if another tile gets touched, we load new things
                 self.tilePos += 1
                 for sprite in self.all_sprites.sprites():
                     sprite.moveLeft()
                 self._evaluateTilePos()
 
-            if self.leftKeyHold:
+            if leftinput:
                 # As soon as I go left, the level should not move anymore (=peach now moves)
                 # Hence, peach-moving state gets entered
                 # Also, how close player is to the border gets calculated
@@ -238,7 +241,7 @@ class StateGame(State):
 
         # If peach is at the border, the level needs to stay + peach moves
         else:
-            if self.rightKeyHold:
+            if rightinput:
                 # If right key gets pressed, closeness to border gets smaller
                 # If peach is at original closeness-position, peach now stays and sprites move again
                 # Hence, states switch
@@ -248,7 +251,10 @@ class StateGame(State):
                     self.levelMoving = True
                 for sprite in self.playerSprites.sprites():
                     sprite.moveRight()
-            if self.leftKeyHold:
+            if leftinput:
+
+                # Only allow left movement if peach is not too close to the let border
+                # if self.borderCloseness < 25:
                 # If the left key was pressed in this state, only the closeness to border increases
                 self.tilePos -= 1
                 self.borderCloseness += 1
@@ -282,7 +288,6 @@ class StateGame(State):
                     self.playerSprites.add(new_sprite)
                     self.player = new_sprite
                     # self.all_sprites.add(self.player)
-
 
     def display(self, screen):
         screen.fill('black')
