@@ -30,8 +30,11 @@ class SpriteTest(pygame.sprite.Sprite):
     Below: What sprites do after player inputs -----------------------------------------------------------------
     """
 
-    def moveLeft(self):
-        self.rect.x -= 2
+    def moveLeft(self, value=5):
+        self.rect.x -= value
 
-    def moveRight(self):
-        self.rect.x += 2
+    def moveRight(self, value=5):
+        self.rect.x += value
+
+    def move_x(self, value):
+        self.rect.x += value
