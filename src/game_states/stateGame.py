@@ -42,12 +42,12 @@ class StateGame(State):
 
         # Allows to temporarily block keys while not loosing the information that a key got pressed
         # Background: Previously i adjusted the attributes above and it did not allow to unblock keys
-        self.rightKeyBlock = False
-        self.leftKeyBlock = False
+        #self.rightKeyBlock = False
+        #self.leftKeyBlock = False
 
         # note down old states
-        self.leftKeyOldState = None
-        self.rightKeyOldState = None
+        #self.leftKeyOldState = None
+        #self.rightKeyOldState = None
 
         # Load level ---------------------------------------------------------------------------
         # levelMatrix: A guide which sprites to create
@@ -57,7 +57,6 @@ class StateGame(State):
         filename = "\level1.txt"
         fullpath = os.getcwd() + path + filename
         self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')
-        # print(self.levelMatrix)
         print("the shape of the level is:", self.levelMatrix.shape)
 
         # There can be maximally 13x25 tiles visible at 1 time (25 because 2 half tiles can be seen)
@@ -66,7 +65,8 @@ class StateGame(State):
         # How far the level got reached, in tiles
         # Initialized by 25: maximally we see the 25th tiles in x-dimension
         # 24: 0-24 = 25 entries
-        self.levelProgress = 24
+        self.levelProgress = 23
+        self.pixelProgress = 23*32
 
         # Create all the sprite objects -------------------------------------------------
         # Creating the sprite groups
@@ -78,7 +78,7 @@ class StateGame(State):
 
         # The player sees 13x24 tiles at once
         for col in range(24):
-            self._loadSpriteColumn(self.levelMatrix[:, col], col)
+            self._loadSpriteColumn(self.levelMatrix[:, col], col, 0)
 
         self.all_sprites.add(SpriteTest())  # todo: remove this line later
 
@@ -108,35 +108,48 @@ class StateGame(State):
                     self.leftKeyHold = False
                 if event.key == pygame.K_UP:
                     self.upKeyHold = False
+                    # todo: That line destroys every bit of structured code but it makes things also 1000x simpler oof
+                    self.player.jumpKeyReleased()
         # From here: Use noted down inputs to change model!
+
+
+
+
 
         # HANDLE COLLISIONS WITH BLOCKS -----------------------------------------------------------------------------
 
+        # Left/Right first
+        # -----------------------------------------------------------------------------------------------------
+        # Idea: Never touch self.rightKeyHold, but alter the input to _borderHandling
+        keyinput_left = self.leftKeyHold
+        keyinput_right = self.rightKeyHold
+
+        # I always have to handle borders -------------------------------------------------------------------
+        self._borderHandling(keyinput_left, keyinput_right)
+
+
+
+
+
+
+
+
+
+
+        # todo -----------------------------------------------------------------------------------------------
+
         # todo: The following could probably be structured better and written in a cleaner way
 
+
+        # YOU CAN ONLY JUMP IF YOU TOUCH THE GROUND ------------------------------------------------------
         # Calculate the collisions separately for horizontal/vertical collisions
-        collisionListTotal = pygame.sprite.spritecollide(self.player.collideRect, self.all_sprites, False)
-        collisionListH = pygame.sprite.spritecollide(self.player.collideRectH, self.all_sprites, False)
         collisionListV = pygame.sprite.spritecollide(self.player.collideRectV, self.all_sprites, False)
 
         # Check the different sides where the player could collide with things
         topCol = False
         bottomCol = False
-        leftCol = False
-        rightCol = False
-
-        # Calculate these
-        for collidingSprite in collisionListH:
-            # print("H col list exists")
-            leftCol = (collidingSprite.rect.collidepoint(self.player.collideRectH.rect.bottomleft) or \
-                       collidingSprite.rect.collidepoint(self.player.collideRectH.rect.topleft)) or \
-                      collidingSprite.rect.collidepoint(self.player.collideRectH.rect.midleft)
-            rightCol = (collidingSprite.rect.collidepoint(self.player.collideRectH.rect.bottomright) or \
-                        collidingSprite.rect.collidepoint(self.player.collideRectH.rect.topright)) or \
-                       collidingSprite.rect.collidepoint(self.player.collideRectH.rect.midright)
 
         for collidingSprite in collisionListV:
-            # print("V col list exists")
             topCol = collidingSprite.rect.collidepoint(self.player.collideRectV.rect.midtop) or \
                      collidingSprite.rect.collidepoint(self.player.collideRectV.rect.topleft) or \
                      collidingSprite.rect.collidepoint(self.player.collideRectV.rect.topright)
@@ -145,72 +158,82 @@ class StateGame(State):
                         collidingSprite.rect.collidepoint(self.player.collideRectV.rect.bottomright)
             # https://stackoverflow.com/questions/20180594/pygame-collision-by-sides-of-sprite
 
-        # When the H and V rects detected no collision and the rect detected 1 collision, then there is
-        # A touch on an edge!
-        union = collisionListV + collisionListH
-        if len(collisionListTotal) == 1 and len(union) == 0:
-            for collidingSprite in collisionListTotal:
-                leftCol = collidingSprite.rect.collidepoint(self.player.collideRect.rect.topleft) or \
-                          collidingSprite.rect.collidepoint(self.player.collideRect.rect.bottomleft)
-                rightCol = collidingSprite.rect.collidepoint(self.player.collideRect.rect.topright) or \
-                           collidingSprite.rect.collidepoint(self.player.collideRect.rect.bottomright)
-
-
-        # HANDLE COLLISIONS ---------------------------------------------------------------------
-
-        # Idea: Never touch self.rightKeyHold, but alter the input to _borderHandling
-        keyinput_left = self.leftKeyHold
-        keyinput_right = self.rightKeyHold
-        if rightCol:
-            if self.rightKeyHold:
-                keyinput_right = False
-        if leftCol:
-            if self.leftKeyHold:
-                keyinput_left = False
+        # todo: new idea: Let peach move whereever she wants and afterwards check if a collision occured with it
+        # write that code after borderhandling
 
         # Handle bottom/top collisions
         if bottomCol:
             # I can only jump if I am standing on the ground
             # I am not a space rocket.
             if self.upKeyHold:
-                self.player.jump()
+                self.player.jumpKeyPressed()
         else:
             # Newton says that I have to abide by the law of gravity if I am jumping
             self.player.applyGravity()
+        # ------------------------------------------------------------------------------------------------------
 
         if topCol:
+            pass
             # If I hit something on top I stop jumping
             # I am not a quantum particle tunnel through an energy barrier
-            self.player.jumpCounter = 0
+            #self.player.jumpCounter = 0"""
+
+
+        # todo ------------------------------------------------------------------------------------------------
+
 
         # todo: Collisions with enemies, coins, items, end flag -----------------------------------------------
 
-        # I always have to handle borders -------------------------------------------------------------------
-        self._borderHandling(keyinput_left, keyinput_right)
+
+
+
+
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
         # Update all sprites
         self.all_sprites.update()
+
+
+
         self.playerSprites.update()
 
-    def _evaluateTilePos(self):
-        # If another tile got touched
-        if self.tilePos == 16:
-            # Reset tile position
-            self.tilePos = 0
 
-            # create between 0 and 13 new sprites
-            # The 23 means "create it at column 23 on the screen"
-            self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23)
 
-            # Increase the level progress
-            self.levelProgress += 1
 
-            # todo: delete 13 old sprites
-            # todo: Idea: Have a 13-tiles high death zone at x-position -2 or something like that
-            # (so not within the view
-            # When sprites collide with that, remove the sprites from their respective group
-            # Bam, done
+
+
+    def _checkCollisions(self):
+        """
+        Checks if after walking, peach clipped into something.
+        If yes, adjust x-position of everything
+        :return: 0: If nothing needs to be changed, -2 if position has to be adjusted by 2 to the left, etc
+        """
+        move = 0
+        col_list = self.player.checkCollisions_blocks(None)
+        # todo Assumption to be verified: Peach should not have any vertical collisions at this point??
+        if len(col_list) == 0:
+            return move # No clipping occured
+        else:
+            for collided in col_list:
+
+                # Then player collided with right side
+                if self.player.rect.left < collided.rect.left:
+                    # If a collision happened
+                    if self.player.rect.right > collided.rect.left:
+                        # put to the left of it
+                        if abs(collided.rect.left - self.player.rect.right) > abs(move):
+                            move = collided.rect.left - self.player.rect.right
+
+                # Else, player collided with left side
+                else:
+                    if self.player.rect.left < collided.rect.right:
+                        # put to the left of it
+                        if abs(collided.rect.right - self.player.rect.left) > abs(move):
+                            move = self.player.rect.left - collided.rect.right
+
+            # At the end, return the absolute biggest move
+            return move
+
 
     def _borderHandling(self, leftinput, rightinput):
         """
@@ -218,26 +241,45 @@ class StateGame(State):
         Most of the time, peach stays at 1 x-position and the level moves.
         However, when approaching a border, if the level moved too, then the game would show the part where
         no level exists = bad
+
+        NEW: Updated, levelProgress and sprite loading
         """
+        adjusted_pos = 0
+
+        # If player is too close to the border, don't allow to move any further
+        if self.borderCloseness > 59:
+            leftinput = False
+
+
 
         # If the level moves + peach stays still
         if self.levelMoving:
             if rightinput:
                 # For the right key, we move all sprites and if another tile gets touched, we load new things
-                self.tilePos += 1
                 for sprite in self.all_sprites.sprites():
                     sprite.moveLeft()
+                self.pixelProgress += 5
+                adjusted_pos = self._checkCollisions()
+                if adjusted_pos != 0:
+                    for sprite in self.all_sprites.sprites():
+                        sprite.move_x(-adjusted_pos)
+                    self.pixelProgress += adjusted_pos
+
                 self._evaluateTilePos()
 
             if leftinput:
                 # As soon as I go left, the level should not move anymore (=peach now moves)
                 # Hence, peach-moving state gets entered
                 # Also, how close player is to the border gets calculated
-                self.tilePos -= 1
                 self.levelMoving = False
-                self.borderCloseness += 1
+                self.borderCloseness += 5
                 for sprite in self.playerSprites.sprites():
                     sprite.moveLeft()
+                adjusted_pos = self._checkCollisions()
+                if adjusted_pos != 0:
+                    for sprite in self.all_sprites.sprites():
+                        sprite.move_x(adjusted_pos)
+                    self.borderCloseness += adjusted_pos
 
         # If peach is at the border, the level needs to stay + peach moves
         else:
@@ -245,33 +287,99 @@ class StateGame(State):
                 # If right key gets pressed, closeness to border gets smaller
                 # If peach is at original closeness-position, peach now stays and sprites move again
                 # Hence, states switch
-                self.tilePos += 1
-                self.borderCloseness -= 1
-                if self.borderCloseness == 0:
-                    self.levelMoving = True
-                for sprite in self.playerSprites.sprites():
-                    sprite.moveRight()
-            if leftinput:
 
+                """
+                Further problem here:
+                If clip occured, then borderCloseness could be e.g. 4
+                For this, peach needs to move 4 pixels
+                And then it needs to switch to levelmoving
+                AND the level needs to move 1 pixel too
+                =5 pixels movement in total
+                """
+
+                # if big enough, verfahre wie normal
+                if self.borderCloseness > 4:
+                    self.borderCloseness -= 5
+                    if self.borderCloseness == 0:
+                        self.levelMoving = True
+                    for sprite in self.playerSprites.sprites():
+                        sprite.moveRight()
+                    adjusted_pos = self._checkCollisions()
+                    if adjusted_pos != 0:
+                        for sprite in self.playerSprites.sprites():
+                            sprite.move_x(adjusted_pos)   # todo: i flipped the sign and it worked??
+                        self.borderCloseness += -adjusted_pos
+                else: # else, a clip occured and do the above
+
+                    # Move peach 4 pixels to the right
+                    for sprite in self.playerSprites.sprites():
+                        sprite.moveRight(self.borderCloseness)
+                    # Check for collisions again
+                    adjusted_pos = self._checkCollisions()
+                    # If collisions, adjust position, if not, try to move whole level
+                    if adjusted_pos != 0:
+                        for sprite in self.playerSprites.sprites():
+                            sprite.move_x(adjusted_pos)   # todo: i flipped the sign and it worked??
+                        self.borderCloseness += -adjusted_pos
+                    else:
+                        # Move whole level and check for collisions again
+                        for sprite in self.all_sprites.sprites():
+                            sprite.moveLeft(5-self.borderCloseness)
+                        self.pixelProgress += 5-self.borderCloseness
+                        adjusted_pos = self._checkCollisions()
+                        if adjusted_pos != 0:
+                            for sprite in self.all_sprites.sprites():
+                                sprite.move_x(-adjusted_pos)
+                            self.pixelProgress += adjusted_pos
+
+                        # Clean up
+                        self.pixelProgress += 5-self.borderCloseness
+                        self.levelMoving = True
+                        self.borderCloseness = 0
+                        self._evaluateTilePos()
+
+            if leftinput:
                 # Only allow left movement if peach is not too close to the let border
                 # if self.borderCloseness < 25:
                 # If the left key was pressed in this state, only the closeness to border increases
-                self.tilePos -= 1
-                self.borderCloseness += 1
+                self.borderCloseness += 5
                 for sprite in self.playerSprites.sprites():
                     sprite.moveLeft()
+                adjusted_pos = self._checkCollisions()
+                if adjusted_pos != 0:
+                    for sprite in self.playerSprites.sprites():
+                        sprite.move_x(-adjusted_pos)
+                    self.borderCloseness += adjusted_pos
 
-    def _loadSpriteColumn(self, column, columnIndex):
+
+
+    def _evaluateTilePos(self):
+        # If another tile got touched
+
+
+        if int(self.pixelProgress/32) > self.levelProgress:
+            print("New level column loaded!", self.levelProgress)
+            self.levelProgress += 1
+            self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress%32)
+
+            # todo: delete 13 old sprites
+            # todo: Idea: Have a 13-tiles high death zone at x-position -2 or something like that
+            # (so not within the view
+            # When sprites collide with that, remove the sprites from their respective group
+
+
+
+
+    def _loadSpriteColumn(self, column, columnIndex, offset):
         """
         Creates new sprites for 1 new column.
+        NEW: Operates with player position
 
         :param column: 1 column with values (=a 13x1 matrix)
         columnID: Index of column in level-matrix
         :return: No direct returns, but it appends sprites to spritegroups
         """
         for row in range(13):
-            # print("currently in y:",row,"  and x:",col)
-
             # If not 0, then a sprite has to be loaded
             if column[row] != 0:
 
@@ -280,14 +388,18 @@ class StateGame(State):
 
                 # CREAING THE SPRITE
                 if column[row] == 1:  # If block
-                    new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2)
+                    new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2 - offset)
                     self.all_sprites.add(new_sprite)
                 if column[row] == 2:  # If player
-                    print("added player")
-                    new_sprite = SpritePlayer(row * 16 * 2, columnIndex * 16 * 2, self.all_sprites)
+                    #new_sprite = SpritePlayer(row * 16 * 2, columnIndex * 16 * 2, self.all_sprites)
+                    # Column index (2nd input is fixed for player!
+                    new_sprite = SpritePlayer(row * 16 * 2, 2 * 16 * 2, self.all_sprites)
                     self.playerSprites.add(new_sprite)
                     self.player = new_sprite
                     # self.all_sprites.add(self.player)
+
+
+
 
     def display(self, screen):
         screen.fill('black')
