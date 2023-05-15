@@ -92,20 +92,23 @@ class SpritePlayer(pygame.sprite.Sprite):
         Checks if the player touches a block either on top or at the bottom (=if the sprite is 1 pixel away)
         :return: (topCol, bottomCol) --> both booleans
         """
-        collisionListV = pygame.sprite.spritecollide(self.collideRectV, self.blockGroup, False)
 
-        # Check the different sides where the player could collide with things
-        topCol = False
         bottomCol = False
+        topCol = False
 
-        for collidingSprite in collisionListV:
-            topCol = collidingSprite.rect.collidepoint(self.collideRectV.rect.midtop) or \
-                     collidingSprite.rect.collidepoint(self.collideRectV.rect.topleft) or \
-                     collidingSprite.rect.collidepoint(self.collideRectV.rect.topright)
-            bottomCol = collidingSprite.rect.collidepoint(self.collideRectV.rect.midbottom) or \
-                        collidingSprite.rect.collidepoint(self.collideRectV.rect.bottomleft) or \
-                        collidingSprite.rect.collidepoint(self.collideRectV.rect.bottomright)
-            # https://stackoverflow.com/questions/20180594/pygame-collision-by-sides-of-sprite
+        for sprite in self.blockGroup.sprites():
+            bottomCol = sprite.rect.collidepoint((self.rect.bottomleft[0], self.rect.bottomleft[1] + 1)) or \
+                     sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
+                     sprite.rect.collidepoint((self.rect.bottomright[0], self.rect.bottomright[1] + 1))
+            if bottomCol:
+                break
+
+        for sprite in self.blockGroup.sprites():
+            topCol = sprite.rect.collidepoint((self.rect.topleft[0], self.rect.topleft[1] + 1)) or \
+                     sprite.rect.collidepoint((self.rect.topleft[0], self.rect.topleft[1] + 1)) or \
+                     sprite.rect.collidepoint((self.rect.topleft[0], self.rect.topleft[1] + 1))
+            if topCol:
+                break
 
         return (topCol, bottomCol)
 
@@ -162,9 +165,12 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 
 
-
+    # todo: I think we don't need the colliderects anymore
     def _updateCollideRectPositions(self):
-        self.collideRectV.rect.center = self.rect.center
+        #self.collideRectV.rect.center = self.rect.center
+        self.collideRectV.rect.left = self.rect.left
+        self.collideRectV.rect.bottom = self.rect.bottom + 1
+
 
     def moveLeft(self, value=5):
         self.rect.x -= value
@@ -198,42 +204,52 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 
     def enemyHit(self):
-        # todo: The player should have some immunity after getting hit by an enemy
-        # Whenever collision,
-        self.immunity = True
-        self.image.fill((255, 216, 240))
+        # Player can only get hit when player is not immune
+        if not self.immunity:
+            # Check top state to see how to handle collision
+            top_state = self.peekState()
+            player_hit = top_state.handleEnemyCollision()  # here the pop state happens + other states make immune
 
-        top_state = self.peekState()
-        tmp = top_state.handleEnemyCollision()
-        if len(self.states) == 1:
-            self.game.setLevelOutcome(-1)
+            # If player has the lowest state, gets hit and is not immune, then game over
+            if len(self.states) == 1 and player_hit and not self.immunity:
+                self.game.setLevelOutcome(-1)
+
+
+            return player_hit  # True if player got hit, False if player "hits back" via star
 
 
 
+    # self.player.addState(PlayerStateBig(self.player))
     def addState(self,state):
         self.states.append(state)
         # Then you go from small to big
         if len(self.states) == 2:
             tmp = self.rect.bottomleft
             self.image = pygame.Surface(self.peekState().size)
+            self.image.fill((255, 105, 180))
             self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
             self.rect.bottomleft = tmp
+            self.collideRectV = self.CollideRect(self.peekState().size[0], self.peekState().size[0] + 2)
+
+            self._updateCollideRectPositions()
+            print(tmp)
 
     def removeState(self):
+        self.immunity = True
+        self.image.fill((255, 216, 240))
+
         if len(self.states) == 2:
             tmp = self.rect.bottomleft
             self.states.pop()
             self.image = pygame.Surface(self.peekState().size)
+            self.image.fill((255, 216, 240))
             self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
             self.rect.bottomleft = tmp
-        elif len(self.states)==1:
+        elif len(self.states) == 1:
             # return something
             pass
         else:
             self.states.pop()
-
-
-
 
     def peekState(self):
         return self.states[-1]
@@ -252,6 +268,24 @@ class SpritePlayer(pygame.sprite.Sprite):
 
         def __init__(self, width, height):
             self.rect = pygame.Rect(0, 0, width, height)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class PlayerState():
@@ -309,7 +343,7 @@ class PlayerStateNormal():
 
     def handleEnemyCollision(self):
         # Game over
-        pass
+        return True
 
     def handleItemCollision(self, itemtype):
         """
@@ -347,6 +381,7 @@ class PlayerStateBig():
         self.player = player
 
     def handleEnemyCollision(self):
+        print("Hello?")
         self.player.removeState()
         return True  # yes, player got hit
 

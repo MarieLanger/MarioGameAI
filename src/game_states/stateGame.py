@@ -15,6 +15,8 @@ from .sprites.spriteCoin import SpriteCoin
 from .sprites.spritePipe import SpritePipe
 from .sprites.spriteGoomba import SpriteGoomba
 from .sprites.spritePiranha import SpritePiranha
+from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
+from .sprites.spriteMushroom import SpriteMushroom
 
 
 class StateGame(State):
@@ -73,6 +75,8 @@ class StateGame(State):
         self.blockSprites = pygame.sprite.Group()
         self.coinSprites = pygame.sprite.Group()
         self.enemySprites = pygame.sprite.Group()
+        self.itemSprites = pygame.sprite.Group()
+        self.helperSprites = pygame.sprite.Group()
 
         # Coins
         self.coinCount = 0
@@ -95,6 +99,8 @@ class StateGame(State):
         for col in range(24):
             self._loadSpriteColumn(self.levelMatrix[:, col], col, 0)
 
+        self.helperSprites.add(GameOverSprite(self.player, self))
+        self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
 
         self.env_sprites.add(SpriteTest())  # todo: remove this line later
 
@@ -169,6 +175,7 @@ class StateGame(State):
         # Update all sprites
         self.env_sprites.update()    # during update, setLevelOutcome may or may not be called
         self.playerSprites.update()
+        self.helperSprites.update()
 
         # If game over
         if self.levelOutcome == -1:
@@ -235,6 +242,10 @@ class StateGame(State):
                     new_sprite = SpritePiranha(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
+                elif column[row] == 4:  #if mushroom
+                    new_sprite = SpriteMushroom(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
+                    self.env_sprites.add(new_sprite)
+                    self.itemSprites.add(new_sprite)
 
 
     def _evaluateTilePos(self):
@@ -418,8 +429,11 @@ class StateGame(State):
 
         self.blockSprites.draw(screen)
         self.coinSprites.draw(screen)
+        self.itemSprites.draw(screen)
 
         self.playerSprites.draw(screen)  # player is in front of everything
+
+        #self.helperSprites.draw(screen)
 
         # Render coin text
         textSurface = self.smallFont.render("Münzen: "+str(self.coinCount),False,(255,255,255))
