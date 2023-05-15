@@ -4,10 +4,11 @@ import pygame
 class SpritePlayer(pygame.sprite.Sprite):
     """
     All sprites inherit from pygame.sprite.Sprite.
-    A basic block sprite that does nothing
+    The player
     :param
         - y_pos: starting y position
         - x_pos: starting x position
+        - blockgroup: player has knowledge about the blocks around it
     """
 
     def __init__(self, y_pos, x_pos, blockgroup):
@@ -61,58 +62,34 @@ class SpritePlayer(pygame.sprite.Sprite):
     Below: What sprites do after player inputs -----------------------------------------------------------------
     """
 
-    def checkCollisions_blocks(self,rect):
+    def checkCollisions_blocks(self):
         """
         Checks for collisions between player and all sprites in the block-group
-        :param rect
-            None: Checks collision with original rect from player
-            horizontal: Checks collision 1 pixel left/right from player
-            vertical: Checks collision 1 pixel top/bottom from player
-            whole: Checks collision 1 pixel on all sides
         :return A list with collided sprites
         """
-        if rect is None:
-            return pygame.sprite.spritecollide(self, self.blockGroup, False)
-        elif rect == "horizontal":
-            return pygame.sprite.spritecollide(self.collideRectH, self.blockGroup, False)
-        elif rect == "vertical":
-            return pygame.sprite.spritecollide(self.collideRectV, self.blockGroup, False)
-        elif rect == "whole":
-            return pygame.sprite.spritecollide(self.collideRect, self.blockGroup, False)
-        else:
-            print("The input rect =",rect, " is not valid!")
+        return pygame.sprite.spritecollide(self, self.blockGroup, False)
 
+    def checkBottomTopTouches(self):
+        """
+        Checks if the player touches a block either on top or at the bottom (=if the sprite is 1 pixel away)
+        :return: (topCol, bottomCol) --> both booleans
+        """
+        collisionListV = pygame.sprite.spritecollide(self.collideRectV, self.blockGroup, False)
 
-    # todo: maybe we don't need this
-    def checkCollisionEdge(self, other_sprite, rect):
-        """
-        Checks on which side the player collides with another sprite
-        :param other_sprite: other sprite that is overlapping
-        :param rect
-            None: Checks collision with original rect from player
-            horizontal: Checks collision 1 pixel left/right from player
-            vertical: Checks collision 1 pixel top/bottom from player
-            whole: Checks collision 1 pixel on all sides
-        :return: list of (topCol, bottomCol, leftCol, rightCol)
-        """
+        # Check the different sides where the player could collide with things
         topCol = False
         bottomCol = False
-        leftCol = False
-        rightCol = False
 
-        if rect is None:
-            return pygame.sprite.spritecollide(self, self.blockGroup, False)
-        elif rect == "horizontal":
-            return pygame.sprite.spritecollide(self.collideRectH, self.blockGroup, False)
-        elif rect == "vertical":
-            return pygame.sprite.spritecollide(self.collideRectV, self.blockGroup, False)
-        elif rect == "whole":
-            return pygame.sprite.spritecollide(self.collideRect, self.blockGroup, False)
-        else:
-            print("The input rect =",rect, " is not valid!")
+        for collidingSprite in collisionListV:
+            topCol = collidingSprite.rect.collidepoint(self.collideRectV.rect.midtop) or \
+                     collidingSprite.rect.collidepoint(self.collideRectV.rect.topleft) or \
+                     collidingSprite.rect.collidepoint(self.collideRectV.rect.topright)
+            bottomCol = collidingSprite.rect.collidepoint(self.collideRectV.rect.midbottom) or \
+                        collidingSprite.rect.collidepoint(self.collideRectV.rect.bottomleft) or \
+                        collidingSprite.rect.collidepoint(self.collideRectV.rect.bottomright)
+            # https://stackoverflow.com/questions/20180594/pygame-collision-by-sides-of-sprite
 
-        return (topCol,bottomCol,leftCol,rightCol)
-
+        return (topCol, bottomCol)
 
 
     def enforceNoVerticalClipping(self):
@@ -137,15 +114,7 @@ class SpritePlayer(pygame.sprite.Sprite):
         """
 
 
-
-
-        # todo: Differentiate for topCols !!!!!!!!!!!!!!!!!!!!!
-
-
-
-        col_list = self.checkCollisions_blocks(None)
-        print(col_list)
-        #print(col_list, self.rect.bottom)
+        col_list = self.checkCollisions_blocks()
         if len(col_list) == 0:
             return  # No clipping, wonderful, we can stop here
         else:
@@ -171,6 +140,9 @@ class SpritePlayer(pygame.sprite.Sprite):
                         # It looks like hovering but actually each rectangle has a black part around it
                         self._updateCollideRectPositions()
                         self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
+
+
+
 
 
     def _updateCollideRectPositions(self):
@@ -208,6 +180,12 @@ class SpritePlayer(pygame.sprite.Sprite):
             self.velocityY = 6
         else:
             self.velocityY += self.gravity
+
+
+    def enemyHit(self):
+        # todo: The player should have some immunity after getting hit by an enemy
+        # Whenever collision,
+        pass
 
 
 
