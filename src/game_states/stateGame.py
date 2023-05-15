@@ -250,16 +250,10 @@ class StateGame(State):
 
     def _evaluateTilePos(self):
         # If another tile got touched
-
         if int(self.pixelProgress/32) > self.levelProgress:
-            print("New level column loaded!", self.levelProgress)
             self.levelProgress += 1
             self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress%32)
 
-            # todo: delete 13 old sprites
-            # todo: Idea: Have a 13-tiles high death zone at x-position -2 or something like that
-            # (so not within the view
-            # When sprites collide with that, remove the sprites from their respective group
 
 
     def _checkCollisions(self):

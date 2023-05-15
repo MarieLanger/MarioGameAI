@@ -51,7 +51,10 @@ class SpriteGoomba(SpriteEnemy):
             if self.playerPrevRect.bottom < self.rect.top:
                 self.kill()
             else:
-                self.player.enemyHit()  # communicate that player got hit
+                player_hit = self.player.enemyHit()  # communicate that player got hit
+                # True if hit, False if player "hits back" via star
+                if not player_hit:
+                    self.kill()
 
         # Update previous position from player
         self.playerPrevRect = self.player.rect.copy()

@@ -21,13 +21,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
         self.rect.topleft = (x_pos, y_pos)
 
-        # Idea for this: Have 1 rect for left/right collisions and 1 rect for top/down collisions
-        # 2 rects are needed because when standing on the ground, one 34x34 rect cannot
-        # differentiate whether or not the bottomright collision is from the bottom or the right side
-        # 2 rects are like a cross!
-        self.collideRectV = self.CollideRect(32, 34)
-        self._updateCollideRectPositions()
-        # https://stackoverflow.com/questions/28805271/pygame-rect-collision-smaller-than-image
 
         # Jumping
         self.velocityY = 0
@@ -60,7 +53,6 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 
         self.rect.y += self.velocityY #  # Apply horizontal velocity to X position
-        self._updateCollideRectPositions()
         #self.applyGravity()
         # Adjust y-position, if necessary
         self.enforceNoVerticalClipping()
@@ -119,7 +111,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         Problem here: The player might clip into the ground too much.
         What this method does: Checks if clipping occured and if yes, adjust the y-position so that player
                                 stands on top of the ground.
-        # todo: also update the collideRects for now, idk if we actually need them later???
         Why it works: The rendering occurs after/at the end of update() So the clipping was never visible
         :return: No direct return, but updates the self.rect.y position
         """
@@ -151,34 +142,23 @@ class SpritePlayer(pygame.sprite.Sprite):
                     # collision on top
                     if self.rect.top <= collided.rect.bottom and self.rect.top >= collided.rect.top:
                         self.rect.top = collided.rect.bottom #+1
-                        self._updateCollideRectPositions()
                         self.velocityY = 0
 
                     # collision at the bottom
                     if self.rect.bottom >= collided.rect.top and self.rect.bottom <= collided.rect.bottom:
                         # Place on top of sprite
                         self.rect.bottom = collided.rect.top #- 1
-                        # It looks like hovering but actually each rectangle has a black part around it
-                        self._updateCollideRectPositions()
                         self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
 
 
 
 
-    # todo: I think we don't need the colliderects anymore
-    def _updateCollideRectPositions(self):
-        #self.collideRectV.rect.center = self.rect.center
-        self.collideRectV.rect.left = self.rect.left
-        self.collideRectV.rect.bottom = self.rect.bottom + 1
-
 
     def moveLeft(self, value=5):
         self.rect.x -= value
-        self._updateCollideRectPositions()
 
     def moveRight(self, value=5):
         self.rect.x += value
-        self._updateCollideRectPositions()
 
     def move_x(self, value):
         self.rect.x += value
@@ -214,12 +194,9 @@ class SpritePlayer(pygame.sprite.Sprite):
             if len(self.states) == 1 and player_hit and not self.immunity:
                 self.game.setLevelOutcome(-1)
 
-
             return player_hit  # True if player got hit, False if player "hits back" via star
 
 
-
-    # self.player.addState(PlayerStateBig(self.player))
     def addState(self,state):
         self.states.append(state)
         # Then you go from small to big
@@ -229,10 +206,6 @@ class SpritePlayer(pygame.sprite.Sprite):
             self.image.fill((255, 105, 180))
             self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
             self.rect.bottomleft = tmp
-            self.collideRectV = self.CollideRect(self.peekState().size[0], self.peekState().size[0] + 2)
-
-            self._updateCollideRectPositions()
-            print(tmp)
 
     def removeState(self):
         self.immunity = True
@@ -255,19 +228,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         return self.states[-1]
 
 
-
-    class CollideRect(pygame.sprite.Sprite):
-        """
-        Helper class to detect when the player sprite is directly next to another sprite.
-        Workaround for:
-        - Pygame can only detect collisions and not when sprites are next to each other
-        - Pygame needs a sprite object to detect collisions and only creating a Rect-object is not sufficient
-
-        Idea: Player class contains 2 of these helper classes and all of the collisions are handled by it!
-        """
-
-        def __init__(self, width, height):
-            self.rect = pygame.Rect(0, 0, width, height)
 
 
 
@@ -300,7 +260,6 @@ class PlayerState():
         """
         Each state has:
         - A rect
-        - A vertical collideRect
         - Alternatively, whenever a new state gets entered, update rect from Player-Class
         - todo later: A different sprite
         """
@@ -381,7 +340,6 @@ class PlayerStateBig():
         self.player = player
 
     def handleEnemyCollision(self):
-        print("Hello?")
         self.player.removeState()
         return True  # yes, player got hit
 
