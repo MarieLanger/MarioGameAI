@@ -70,9 +70,11 @@ class StateGame(State):
 
         # Create all the sprite objects -------------------------------------------------
         # Creating the sprite groups
-        self.all_sprites = pygame.sprite.Group()
+        self.all_sprites = pygame.sprite.Group()  # contains all sprites except the player
         self.playerSprites = pygame.sprite.Group()
         self.player = None
+        self.blockSprites = pygame.sprite.Group()
+        self.coinSprites = pygame.sprite.Group()
 
         # Actually creating the first sprites at the start of the level + adding them into a group
 
@@ -339,7 +341,6 @@ class StateGame(State):
 
     def _evaluateTilePos(self):
         # If another tile got touched
-
 
         if int(self.pixelProgress/32) > self.levelProgress:
             print("New level column loaded!", self.levelProgress)
