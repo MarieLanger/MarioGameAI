@@ -122,13 +122,11 @@ class SpritePlayer(pygame.sprite.Sprite):
         What this method does: Checks if clipping occured and if yes, adjust the y-position so that player
                                 stands on top of the ground.
         # todo: also update the collideRects for now, idk if we actually need them later???
-        # todo: Probably also set the velocity in y direction to zero?
         Why it works: The rendering occurs after/at the end of update() So the clipping was never visible
         :return: No direct return, but updates the self.rect.y position
         """
 
         # todo: potentially inefficient because we check collisions twice?
-        # todo: potentially bad coding because the x collisions get handled differently than the y-collisions
         """
         - Player inputs keys
         - Collisions were checked
@@ -137,7 +135,16 @@ class SpritePlayer(pygame.sprite.Sprite):
         - Yolo it and apply y positions
         - Check if new position is valid and adjust, if necessary
         """
+
+
+
+
+        # todo: Differentiate for topCols !!!!!!!!!!!!!!!!!!!!!
+
+
+
         col_list = self.checkCollisions_blocks(None)
+        print(col_list)
         #print(col_list, self.rect.bottom)
         if len(col_list) == 0:
             return  # No clipping, wonderful, we can stop here
@@ -150,11 +157,20 @@ class SpritePlayer(pygame.sprite.Sprite):
                 x_col = not (self.rect.right < collided.rect.left or self.rect.left > collided.rect.right)
                 y_col = not (self.rect.bottom < collided.rect.top or self.rect.top > collided.rect.bottom)
                 if x_col and y_col:
-                    # Place on top of sprite
-                    self.rect.bottom = collided.rect.top #- 1
-                    # It looks like hovering but actually each rectangle has a black part around it
-                    self._updateCollideRectPositions()
-                    self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
+
+                    # collision on top
+                    if self.rect.top <= collided.rect.bottom and self.rect.top >= collided.rect.top:
+                        self.rect.top = collided.rect.bottom #+1
+                        self._updateCollideRectPositions()
+                        self.velocityY = 0
+
+                    # collision at the bottom
+                    if self.rect.bottom >= collided.rect.top and self.rect.bottom <= collided.rect.bottom:
+                        # Place on top of sprite
+                        self.rect.bottom = collided.rect.top #- 1
+                        # It looks like hovering but actually each rectangle has a black part around it
+                        self._updateCollideRectPositions()
+                        self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
 
 
     def _updateCollideRectPositions(self):
@@ -175,8 +191,12 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 
     def jumpKeyPressed(self):
-        self.velocityY = -15 #-4
-        self.jumpCounter = 1
+        # If peach is in the air, the velocity is either <0 (=jumping up)
+        # or >0 (=jumping down)
+        # When this is the case, peach shouldnt be able to jump too
+        if self.velocityY == 0:
+            self.velocityY = -11 #-4
+            self.jumpCounter = 1
 
     def jumpKeyReleased(self):
         if self.velocityY < -5:
