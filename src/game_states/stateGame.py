@@ -4,6 +4,7 @@ import os
 import numpy as np
 
 from .state import State
+from .stateGameOver import StateGameOver
 # from .stateTitle import StateTitle    no!!!! because we want to exit this state, not put another title on top of it!!
 # otherwise circular dependency!!!!!!
 
@@ -13,6 +14,7 @@ from .sprites.spritePlayer import SpritePlayer
 from .sprites.spriteCoin import SpriteCoin
 from .sprites.spritePipe import SpritePipe
 from .sprites.spriteGoomba import SpriteGoomba
+from .sprites.spritePiranha import SpritePiranha
 
 
 class StateGame(State):
@@ -26,6 +28,22 @@ class StateGame(State):
         # Game related variables --------------------------------------------------------------
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
 
+        # Load level ---------------------------------------------------------------------------
+        path = "\..\data\levels"
+        filename = "\level1.txt"
+        fullpath = os.getcwd() + path + filename
+        self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
+        print("the shape of the level is:", self.levelMatrix.shape)
+
+        self.initializeLevel()
+
+
+    def initializeLevel(self):
+        """
+        Initializes level.
+        Putting this into a separate method allows to reset the level after a game over got encountered
+        :return:
+        """
         # Necessary for movement at borders.
         # When Peach is close to a border or goes back, Peach moves and the sprites stay still.
         # When Peach moves forward, the level moves and peach stays still
@@ -37,13 +55,6 @@ class StateGame(State):
         self.leftKeyHold = False
         self.rightKeyHold = False
         self.upKeyHold = False
-
-        # Load level ---------------------------------------------------------------------------
-        path = "\..\data\levels"
-        filename = "\level1.txt"
-        fullpath = os.getcwd() + path + filename
-        self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
-        print("the shape of the level is:", self.levelMatrix.shape)
 
         # There can be maximally 13x25 tiles visible at 1 time (25 because 2 half tiles can be seen)
         # self.currentMatrix = self.levelMatrix[0:13, 0:25]
@@ -66,6 +77,9 @@ class StateGame(State):
         # Coins
         self.coinCount = 0
 
+        # Communicate level completed (+1) or game over (-1)
+        self.levelOutcome = 0
+
 
 
 
@@ -73,7 +87,7 @@ class StateGame(State):
         # Actually creating the first sprites at the start of the level + adding them into a group ---------------
 
         # Creating the player
-        new_sprite = SpritePlayer(11 * 16 * 2, 2 * 16 * 2, self.blockSprites)
+        new_sprite = SpritePlayer(11 * 16 * 2, 2 * 16 * 2, self.blockSprites, self)
         self.playerSprites.add(new_sprite)
         self.player = new_sprite
 
@@ -84,6 +98,7 @@ class StateGame(State):
 
         self.env_sprites.add(SpriteTest())  # todo: remove this line later
 
+
     def handleInputs(self):
         # Note down inputs --------------------------------------------
         # Necessary to have continued movement
@@ -92,8 +107,7 @@ class StateGame(State):
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pygame.quit()
-                sys.exit()
+                self.game.exitCurrentState()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     self.game.exitCurrentState()
@@ -153,11 +167,21 @@ class StateGame(State):
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
         # Update all sprites
-        self.env_sprites.update()
+        self.env_sprites.update()    # during update, setLevelOutcome may or may not be called
         self.playerSprites.update()
 
+        # If game over
+        if self.levelOutcome == -1:
+            return StateGameOver(self.game,self)
+
+        # If level completed
+        if self.levelOutcome == +1:
+            pass
 
 
+    def setLevelOutcome(self, value):
+        # value: -1 game over   +1 completed
+        self.levelOutcome = value
 
     def _loadSpriteColumn(self, column, columnIndex, offset):
         """
@@ -178,7 +202,7 @@ class StateGame(State):
                     new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2 - offset)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
-                if column[row] == 2:  # If pipe
+                elif column[row] == 2:  # If pipe
                     # If column above has pipe, then pipe has already been created
                     if column[row-1] == 2:
                         break
@@ -193,18 +217,22 @@ class StateGame(State):
                     new_sprite = SpritePipe(row * 16 * 2, columnIndex * 16 * 2 - offset, height)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
-                """if column[row] == 2:  # If player
+                    """if column[row] == 2:  # If player
                     #new_sprite = SpritePlayer(row * 16 * 2, columnIndex * 16 * 2, self.env_sprites)
                     # Column index (2nd input is fixed for player!
                     new_sprite = SpritePlayer(row * 16 * 2, 2 * 16 * 2, self.blockSprites)
                     self.playerSprites.add(new_sprite)
                     self.player = new_sprite"""
-                if column[row] == 6:  #if coin
+                elif column[row] == 6:  #if coin
                     new_sprite = SpriteCoin(row * 16 * 2, columnIndex * 16 * 2 - offset, self,self.player)
                     self.env_sprites.add(new_sprite)
                     self.coinSprites.add(new_sprite)
-                if column[row] == 7:  #if goomba
+                elif column[row] == 7:  #if goomba
                     new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                    self.env_sprites.add(new_sprite)
+                    self.enemySprites.add(new_sprite)
+                elif column[row] == 9:  #if piranha
+                    new_sprite = SpritePiranha(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
 
@@ -385,9 +413,12 @@ class StateGame(State):
 
         # Render all sprites
         #self.env_sprites.draw(screen)
+
+        self.enemySprites.draw(screen)  # enemies have to be at least behind the blocks!
+
         self.blockSprites.draw(screen)
         self.coinSprites.draw(screen)
-        self.enemySprites.draw(screen)  # enemies have to be at least behind the blocks!
+
         self.playerSprites.draw(screen)  # player is in front of everything
 
         # Render coin text
@@ -396,4 +427,4 @@ class StateGame(State):
 
 
         # Update everything
-        pygame.display.update()
+        #pygame.display.update()

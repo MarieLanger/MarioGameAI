@@ -77,7 +77,7 @@ class StateTitle(State):
 
 
         #Update everything
-        pygame.display.update()
+        #pygame.display.update()
 
 
     def _displayText(self,content,color,position,font,screen):

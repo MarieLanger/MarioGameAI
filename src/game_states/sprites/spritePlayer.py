@@ -11,8 +11,10 @@ class SpritePlayer(pygame.sprite.Sprite):
         - blockgroup: player has knowledge about the blocks around it
     """
 
-    def __init__(self, y_pos, x_pos, blockgroup):
+    def __init__(self, y_pos, x_pos, blockgroup, game):
         pygame.sprite.Sprite.__init__(self)
+
+        self.game = game
 
         self.image = pygame.Surface((16 * 2, 16 * 2))
         self.image.fill((255, 105, 180))
@@ -24,8 +26,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         # differentiate whether or not the bottomright collision is from the bottom or the right side
         # 2 rects are like a cross!
         self.collideRectV = self.CollideRect(32, 34)
-        self.collideRectH = self.CollideRect(34, 32)
-        self.collideRect = self.CollideRect(34,34)
         self._updateCollideRectPositions()
         # https://stackoverflow.com/questions/28805271/pygame-rect-collision-smaller-than-image
 
@@ -33,13 +33,23 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.velocityY = 0
         self.gravity = 0.5 #0.4
 
+        # Enemy interactions
+        self.immunity = False
+        self.immunityCounter = 0
+
+        # Player states after getting items
+        self.states = []
+        self.states.append(PlayerStateNormal(self))
+
 
         # todo: Do I need this?
         self.blockGroup = blockgroup
-        self.enemiesGroup = None
         self.itemsGroup = None
-        self.coinsGroup = None
         self.otherGroup = None
+
+
+
+
 
     def update(self):
         """
@@ -49,11 +59,19 @@ class SpritePlayer(pygame.sprite.Sprite):
         # https://gamedev.stackexchange.com/questions/29617/how-to-make-a-character-jump
 
 
-        self.rect.y += self.velocityY #* self.jumpCounter   # Apply horizontal velocity to X position
+        self.rect.y += self.velocityY #  # Apply horizontal velocity to X position
         self._updateCollideRectPositions()
         #self.applyGravity()
         # Adjust y-position, if necessary
         self.enforceNoVerticalClipping()
+
+
+        if self.immunity:
+            self.immunityCounter += 1
+            if self.immunityCounter == 70:
+                self.immunity = False
+                self.immunityCounter = 0
+                self.image.fill((255, 105, 180))
 
 
 
@@ -146,9 +164,7 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 
     def _updateCollideRectPositions(self):
-        self.collideRectH.rect.center = self.rect.center
         self.collideRectV.rect.center = self.rect.center
-        self.collideRect.rect.center = self.rect.center
 
     def moveLeft(self, value=5):
         self.rect.x -= value
@@ -168,7 +184,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         # When this is the case, peach shouldnt be able to jump too
         if self.velocityY == 0:
             self.velocityY = -11 #-4
-            self.jumpCounter = 1
 
     def jumpKeyReleased(self):
         if self.velocityY < -5:
@@ -185,7 +200,43 @@ class SpritePlayer(pygame.sprite.Sprite):
     def enemyHit(self):
         # todo: The player should have some immunity after getting hit by an enemy
         # Whenever collision,
-        pass
+        self.immunity = True
+        self.image.fill((255, 216, 240))
+
+        top_state = self.peekState()
+        tmp = top_state.handleEnemyCollision()
+        if len(self.states) == 1:
+            self.game.setLevelOutcome(-1)
+
+
+
+    def addState(self,state):
+        self.states.append(state)
+        # Then you go from small to big
+        if len(self.states) == 2:
+            tmp = self.rect.bottomleft
+            self.image = pygame.Surface(self.peekState().size)
+            self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
+            self.rect.bottomleft = tmp
+
+    def removeState(self):
+        if len(self.states) == 2:
+            tmp = self.rect.bottomleft
+            self.states.pop()
+            self.image = pygame.Surface(self.peekState().size)
+            self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
+            self.rect.bottomleft = tmp
+        elif len(self.states)==1:
+            # return something
+            pass
+        else:
+            self.states.pop()
+
+
+
+
+    def peekState(self):
+        return self.states[-1]
 
 
 
@@ -201,3 +252,181 @@ class SpritePlayer(pygame.sprite.Sprite):
 
         def __init__(self, width, height):
             self.rect = pygame.Rect(0, 0, width, height)
+
+
+class PlayerState():
+    """
+    Class that holds the different states of Peach:
+    - Normal tiny
+    - Bigger
+    - Star
+    - Fireflower
+    """
+    def __init__(self):
+        """
+        Each state has:
+        - A rect
+        - A vertical collideRect
+        - Alternatively, whenever a new state gets entered, update rect from Player-Class
+        - todo later: A different sprite
+        """
+        pass
+
+    def handleEnemyCollision(self):
+        """
+        - Lower state
+        - Kill enemy
+        :return:
+        """
+        pass
+
+    def handleItemCollision(self):
+        """
+        If the item is lower or equal to current state, do nothing, otherwise, add state
+        :return:
+        """
+        pass
+
+    def spaceKeyPressed(self):
+        """
+        FireMario should be able to create a flame, the other ones don't
+        :return:
+        """
+        pass
+
+class PlayerStateNormal():
+    """
+    Class that holds the normal state of Peach
+    """
+    def __init__(self, player):
+
+        # width, height
+        self.size = [16 * 2, 16 * 2]
+        self.color = (255, 105, 180)
+
+        # reference
+        self.player = player
+
+    def handleEnemyCollision(self):
+        # Game over
+        pass
+
+    def handleItemCollision(self, itemtype):
+        """
+        If the item is lower or equal to current state, do nothing, otherwise, add state
+        :return:
+        """
+        if itemtype == "mushroom":
+            self.player.addState(PlayerStateBig(self.player))
+        elif itemtype == "fireflower":
+            self.player.addState(PlayerStateBig(self.player))
+            self.player.addState(PlayerStateFireFlower(self.player))
+        elif itemtype == "star":
+            self.player.addState(PlayerStateBig(self.player))
+            self.player.add(PlayerStateStar(self.player))
+
+    def spaceKeyPressed(self):
+        """
+        FireMario should be able to create a flame, the other ones don't
+        :return:
+        """
+        pass
+
+
+class PlayerStateBig():
+    """
+    Class that holds the bigger state of Peach
+    """
+    def __init__(self, player):
+
+        # width, height
+        self.size = [16 * 2, 32 * 2]
+        self.color = (255, 105, 180)
+
+        # reference
+        self.player = player
+
+    def handleEnemyCollision(self):
+        self.player.removeState()
+        return True  # yes, player got hit
+
+    def handleItemCollision(self, itemtype):
+        """
+        If the item is lower or equal to current state, do nothing, otherwise, add state
+        :return:
+        """
+        if itemtype == "fireflower":
+            self.player.addState(PlayerStateFireFlower(self.player))
+        elif itemtype == "star":
+            self.player.add(PlayerStateStar(self.player))
+
+    def spaceKeyPressed(self):
+        """
+        FireMario should be able to create a flame, the other ones don't
+        :return:
+        """
+        pass
+
+
+class PlayerStateStar():
+    """
+    Class that holds the bigger state of Peach
+    """
+    def __init__(self, player):
+
+        # width, height
+        self.size = [16 * 2, 32 * 2]
+        self.color = (255, 105, 180)
+
+        # reference
+        self.player = player
+
+    def handleEnemyCollision(self):
+        self.player.removeState()
+        return False  # no, enemy should get hit instead
+
+    def handleItemCollision(self, itemtype):
+        """
+        If the item is lower or equal to current state, do nothing, otherwise, add state
+        :return:
+        """
+        pass
+
+    def spaceKeyPressed(self):
+        """
+        FireMario should be able to create a flame, the other ones don't
+        :return:
+        """
+        pass
+
+class PlayerStateFireFlower():
+    """
+    Class that holds the bigger state of Peach
+    """
+    def __init__(self, player):
+
+        # width, height
+        self.size = [16 * 2, 32 * 2]
+        self.color = (255, 105, 180)
+
+        # reference
+        self.player = player
+
+    def handleEnemyCollision(self):
+        self.player.removeState()
+        return True  # yes, player got hit
+
+    def handleItemCollision(self, itemtype):
+        """
+        If the item is lower or equal to current state, do nothing, otherwise, add state
+        :return:
+        """
+        if itemtype == "star":
+            self.player.add(PlayerStateStar(self.player))
+
+    def spaceKeyPressed(self):
+        """
+        FireMario should be able to create a flame, the other ones don't
+        :return:
+        """
+        pass
