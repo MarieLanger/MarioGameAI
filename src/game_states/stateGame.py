@@ -124,22 +124,12 @@ class StateGame(State):
         keyinput_left = self.leftKeyHold
         keyinput_right = self.rightKeyHold
 
+        # New idea: Let peach move whereever she wants and afterwards check if a collision occured with it
         # I always have to handle borders -------------------------------------------------------------------
         self._borderHandling(keyinput_left, keyinput_right)
 
 
-
-
-
-
-
-
-
-
-        # todo -----------------------------------------------------------------------------------------------
-
         # todo: The following could probably be structured better and written in a cleaner way
-
 
         # YOU CAN ONLY JUMP IF YOU TOUCH THE GROUND ------------------------------------------------------
         # Calculate the collisions separately for horizontal/vertical collisions
@@ -158,9 +148,6 @@ class StateGame(State):
                         collidingSprite.rect.collidepoint(self.player.collideRectV.rect.bottomright)
             # https://stackoverflow.com/questions/20180594/pygame-collision-by-sides-of-sprite
 
-        # todo: new idea: Let peach move whereever she wants and afterwards check if a collision occured with it
-        # write that code after borderhandling
-
         # Handle bottom/top collisions
         if bottomCol:
             # I can only jump if I am standing on the ground
@@ -173,13 +160,12 @@ class StateGame(State):
         # ------------------------------------------------------------------------------------------------------
 
         if topCol:
-            pass
+            self.player.jumpKeyReleased()
             # If I hit something on top I stop jumping
             # I am not a quantum particle tunnel through an energy barrier
             #self.player.jumpCounter = 0"""
 
 
-        # todo ------------------------------------------------------------------------------------------------
 
 
         # todo: Collisions with enemies, coins, items, end flag -----------------------------------------------
@@ -210,7 +196,6 @@ class StateGame(State):
         """
         move = 0
         col_list = self.player.checkCollisions_blocks(None)
-        # todo Assumption to be verified: Peach should not have any vertical collisions at this point??
         if len(col_list) == 0:
             return move # No clipping occured
         else:
@@ -249,7 +234,6 @@ class StateGame(State):
         # If player is too close to the border, don't allow to move any further
         if self.borderCloseness > 59:
             leftinput = False
-
 
 
         # If the level moves + peach stays still
@@ -307,7 +291,7 @@ class StateGame(State):
                     adjusted_pos = self._checkCollisions()
                     if adjusted_pos != 0:
                         for sprite in self.playerSprites.sprites():
-                            sprite.move_x(adjusted_pos)   # todo: i flipped the sign and it worked??
+                            sprite.move_x(adjusted_pos)   # i flipped the sign and it worked?
                         self.borderCloseness += -adjusted_pos
                 else: # else, a clip occured and do the above
 
@@ -319,7 +303,7 @@ class StateGame(State):
                     # If collisions, adjust position, if not, try to move whole level
                     if adjusted_pos != 0:
                         for sprite in self.playerSprites.sprites():
-                            sprite.move_x(adjusted_pos)   # todo: i flipped the sign and it worked??
+                            sprite.move_x(adjusted_pos)
                         self.borderCloseness += -adjusted_pos
                     else:
                         # Move whole level and check for collisions again
