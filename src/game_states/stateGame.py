@@ -10,6 +10,9 @@ from .state import State
 from .sprites.spriteTest import SpriteTest  # YOU NEED A DOT BEFORE THE FOLDER NAME AAAAAAAAAAAAAAAAAAAAHHHHHHH
 from .sprites.spriteBlock import SpriteBlock
 from .sprites.spritePlayer import SpritePlayer
+from .sprites.spriteCoin import SpriteCoin
+from .sprites.spritePipe import SpritePipe
+from .sprites.spriteGoomba import SpriteGoomba
 
 
 class StateGame(State):
@@ -21,17 +24,12 @@ class StateGame(State):
         self.game = game
 
         # Game related variables --------------------------------------------------------------
+        self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
 
-        # Position of left down corner within 1 tile. Goes from 0-15
-        self.tilePos = 0
-
-        self.levelMoving = True  # see below:
-        """Necessary for movement:
-        Necessary for movement at borders. 
-        When Peach is close to a border or goes back, Peach moves and the sprites stay still.
-        When Peach moves forward, the level moves and peach stays still.
-        """
-
+        # Necessary for movement at borders.
+        # When Peach is close to a border or goes back, Peach moves and the sprites stay still.
+        # When Peach moves forward, the level moves and peach stays still
+        self.levelMoving = True
         self.borderCloseness = 0  # When peach goes left, measure how close she is to the border
 
         # Pygame only detects when keys got pressed or released, but not when they stay held -----
@@ -40,23 +38,11 @@ class StateGame(State):
         self.rightKeyHold = False
         self.upKeyHold = False
 
-        # Allows to temporarily block keys while not loosing the information that a key got pressed
-        # Background: Previously i adjusted the attributes above and it did not allow to unblock keys
-        #self.rightKeyBlock = False
-        #self.leftKeyBlock = False
-
-        # note down old states
-        #self.leftKeyOldState = None
-        #self.rightKeyOldState = None
-
         # Load level ---------------------------------------------------------------------------
-        # levelMatrix: A guide which sprites to create
-        # currentMatrix: Updates when e.g. enemy positions change too
-
         path = "\..\data\levels"
         filename = "\level1.txt"
         fullpath = os.getcwd() + path + filename
-        self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')
+        self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
         print("the shape of the level is:", self.levelMatrix.shape)
 
         # There can be maximally 13x25 tiles visible at 1 time (25 because 2 half tiles can be seen)
@@ -70,19 +56,33 @@ class StateGame(State):
 
         # Create all the sprite objects -------------------------------------------------
         # Creating the sprite groups
-        self.all_sprites = pygame.sprite.Group()  # contains all sprites except the player
+        self.env_sprites = pygame.sprite.Group()  # contains all sprites except the player
         self.playerSprites = pygame.sprite.Group()
         self.player = None
         self.blockSprites = pygame.sprite.Group()
         self.coinSprites = pygame.sprite.Group()
+        self.enemySprites = pygame.sprite.Group()
 
-        # Actually creating the first sprites at the start of the level + adding them into a group
+        # Coins
+        self.coinCount = 0
+
+
+
+
+
+        # Actually creating the first sprites at the start of the level + adding them into a group ---------------
+
+        # Creating the player
+        new_sprite = SpritePlayer(11 * 16 * 2, 2 * 16 * 2, self.blockSprites)
+        self.playerSprites.add(new_sprite)
+        self.player = new_sprite
 
         # The player sees 13x24 tiles at once
         for col in range(24):
             self._loadSpriteColumn(self.levelMatrix[:, col], col, 0)
 
-        self.all_sprites.add(SpriteTest())  # todo: remove this line later
+
+        self.env_sprites.add(SpriteTest())  # todo: remove this line later
 
     def handleInputs(self):
         # Note down inputs --------------------------------------------
@@ -121,56 +121,30 @@ class StateGame(State):
         # HANDLE COLLISIONS WITH BLOCKS -----------------------------------------------------------------------------
 
         # Left/Right first
-        # -----------------------------------------------------------------------------------------------------
-        # Idea: Never touch self.rightKeyHold, but alter the input to _borderHandling
-        keyinput_left = self.leftKeyHold
-        keyinput_right = self.rightKeyHold
-
-        # New idea: Let peach move whereever she wants and afterwards check if a collision occured with it
-        # I always have to handle borders -------------------------------------------------------------------
-        self._borderHandling(keyinput_left, keyinput_right)
+        # Idea: Let peach move where she wants and afterwards check if a collision occurred with it
+        # While doing this, I always have to handle borders
+        self._borderHandling(self.leftKeyHold, self.rightKeyHold)
 
 
-        # todo: The following could probably be structured better and written in a cleaner way
-
-        # YOU CAN ONLY JUMP IF YOU TOUCH THE GROUND ------------------------------------------------------
-        # Calculate the collisions separately for horizontal/vertical collisions
-        collisionListV = pygame.sprite.spritecollide(self.player.collideRectV, self.all_sprites, False)
-
-        # Check the different sides where the player could collide with things
-        topCol = False
-        bottomCol = False
-
-        for collidingSprite in collisionListV:
-            topCol = collidingSprite.rect.collidepoint(self.player.collideRectV.rect.midtop) or \
-                     collidingSprite.rect.collidepoint(self.player.collideRectV.rect.topleft) or \
-                     collidingSprite.rect.collidepoint(self.player.collideRectV.rect.topright)
-            bottomCol = collidingSprite.rect.collidepoint(self.player.collideRectV.rect.midbottom) or \
-                        collidingSprite.rect.collidepoint(self.player.collideRectV.rect.bottomleft) or \
-                        collidingSprite.rect.collidepoint(self.player.collideRectV.rect.bottomright)
-            # https://stackoverflow.com/questions/20180594/pygame-collision-by-sides-of-sprite
-
-        # Handle bottom/top collisions
+        # You can only jump if you touch the ground, check this here and handle key inputs
+        (topCol, bottomCol) = self.player.checkBottomTopTouches()
         if bottomCol:
             # I can only jump if I am standing on the ground
             # I am not a space rocket.
             if self.upKeyHold:
                 self.player.jumpKeyPressed()
         else:
-            # Newton says that I have to abide by the law of gravity if I am jumping
+            # Newton says that I have to abide by the law of gravity after I jumped
             self.player.applyGravity()
-        # ------------------------------------------------------------------------------------------------------
-
         if topCol:
             self.player.jumpKeyReleased()
             # If I hit something on top I stop jumping
             # I am not a quantum particle tunnel through an energy barrier
-            #self.player.jumpCounter = 0"""
 
 
 
 
-        # todo: Collisions with enemies, coins, items, end flag -----------------------------------------------
+        # todo: Collisions with enemies, items, end flag -----------------------------------------------
 
 
 
@@ -179,15 +153,74 @@ class StateGame(State):
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
         # Update all sprites
-        self.all_sprites.update()
-
-
-
+        self.env_sprites.update()
         self.playerSprites.update()
 
 
 
 
+    def _loadSpriteColumn(self, column, columnIndex, offset):
+        """
+        Creates new sprites for 1 new column.
+        NEW: Operates with player position
+
+        :param column: 1 column with values (=a 13x1 matrix)
+        columnID: Index of column in level-matrix
+        :return: No direct returns, but it appends sprites to spritegroups
+        """
+        for row in range(13):
+            # If not 0, then a sprite has to be loaded
+            if column[row] != 0:
+                # Initialize reference for later
+                new_sprite = None
+                # CREAING THE SPRITES
+                if column[row] == 1:  # If block
+                    new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2 - offset)
+                    self.env_sprites.add(new_sprite)
+                    self.blockSprites.add(new_sprite)
+                if column[row] == 2:  # If pipe
+                    # If column above has pipe, then pipe has already been created
+                    if column[row-1] == 2:
+                        break
+                    height = 32
+                    i = 1
+                    while True:
+                        if column[row+i] == 2:
+                            height += 32
+                            i += 1
+                        else:
+                            break
+                    new_sprite = SpritePipe(row * 16 * 2, columnIndex * 16 * 2 - offset, height)
+                    self.env_sprites.add(new_sprite)
+                    self.blockSprites.add(new_sprite)
+                """if column[row] == 2:  # If player
+                    #new_sprite = SpritePlayer(row * 16 * 2, columnIndex * 16 * 2, self.env_sprites)
+                    # Column index (2nd input is fixed for player!
+                    new_sprite = SpritePlayer(row * 16 * 2, 2 * 16 * 2, self.blockSprites)
+                    self.playerSprites.add(new_sprite)
+                    self.player = new_sprite"""
+                if column[row] == 6:  #if coin
+                    new_sprite = SpriteCoin(row * 16 * 2, columnIndex * 16 * 2 - offset, self,self.player)
+                    self.env_sprites.add(new_sprite)
+                    self.coinSprites.add(new_sprite)
+                if column[row] == 7:  #if goomba
+                    new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                    self.env_sprites.add(new_sprite)
+                    self.enemySprites.add(new_sprite)
+
+
+    def _evaluateTilePos(self):
+        # If another tile got touched
+
+        if int(self.pixelProgress/32) > self.levelProgress:
+            print("New level column loaded!", self.levelProgress)
+            self.levelProgress += 1
+            self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress%32)
+
+            # todo: delete 13 old sprites
+            # todo: Idea: Have a 13-tiles high death zone at x-position -2 or something like that
+            # (so not within the view
+            # When sprites collide with that, remove the sprites from their respective group
 
 
     def _checkCollisions(self):
@@ -197,7 +230,7 @@ class StateGame(State):
         :return: 0: If nothing needs to be changed, -2 if position has to be adjusted by 2 to the left, etc
         """
         move = 0
-        col_list = self.player.checkCollisions_blocks(None)
+        col_list = self.player.checkCollisions_blocks()
         if len(col_list) == 0:
             return move # No clipping occured
         else:
@@ -242,12 +275,12 @@ class StateGame(State):
         if self.levelMoving:
             if rightinput:
                 # For the right key, we move all sprites and if another tile gets touched, we load new things
-                for sprite in self.all_sprites.sprites():
+                for sprite in self.env_sprites.sprites():
                     sprite.moveLeft()
                 self.pixelProgress += 5
                 adjusted_pos = self._checkCollisions()
                 if adjusted_pos != 0:
-                    for sprite in self.all_sprites.sprites():
+                    for sprite in self.env_sprites.sprites():
                         sprite.move_x(-adjusted_pos)
                     self.pixelProgress += adjusted_pos
 
@@ -263,7 +296,7 @@ class StateGame(State):
                     sprite.moveLeft()
                 adjusted_pos = self._checkCollisions()
                 if adjusted_pos != 0:
-                    for sprite in self.all_sprites.sprites():
+                    for sprite in self.env_sprites.sprites():
                         sprite.move_x(adjusted_pos)
                     self.borderCloseness += adjusted_pos
 
@@ -309,12 +342,12 @@ class StateGame(State):
                         self.borderCloseness += -adjusted_pos
                     else:
                         # Move whole level and check for collisions again
-                        for sprite in self.all_sprites.sprites():
+                        for sprite in self.env_sprites.sprites():
                             sprite.moveLeft(5-self.borderCloseness)
                         self.pixelProgress += 5-self.borderCloseness
                         adjusted_pos = self._checkCollisions()
                         if adjusted_pos != 0:
-                            for sprite in self.all_sprites.sprites():
+                            for sprite in self.env_sprites.sprites():
                                 sprite.move_x(-adjusted_pos)
                             self.pixelProgress += adjusted_pos
 
@@ -339,58 +372,28 @@ class StateGame(State):
 
 
 
-    def _evaluateTilePos(self):
-        # If another tile got touched
-
-        if int(self.pixelProgress/32) > self.levelProgress:
-            print("New level column loaded!", self.levelProgress)
-            self.levelProgress += 1
-            self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress%32)
-
-            # todo: delete 13 old sprites
-            # todo: Idea: Have a 13-tiles high death zone at x-position -2 or something like that
-            # (so not within the view
-            # When sprites collide with that, remove the sprites from their respective group
 
 
 
-
-    def _loadSpriteColumn(self, column, columnIndex, offset):
-        """
-        Creates new sprites for 1 new column.
-        NEW: Operates with player position
-
-        :param column: 1 column with values (=a 13x1 matrix)
-        columnID: Index of column in level-matrix
-        :return: No direct returns, but it appends sprites to spritegroups
-        """
-        for row in range(13):
-            # If not 0, then a sprite has to be loaded
-            if column[row] != 0:
-
-                # Initialize reference for later
-                new_sprite = None
-
-                # CREAING THE SPRITE
-                if column[row] == 1:  # If block
-                    new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2 - offset)
-                    self.all_sprites.add(new_sprite)
-                if column[row] == 2:  # If player
-                    #new_sprite = SpritePlayer(row * 16 * 2, columnIndex * 16 * 2, self.all_sprites)
-                    # Column index (2nd input is fixed for player!
-                    new_sprite = SpritePlayer(row * 16 * 2, 2 * 16 * 2, self.all_sprites)
-                    self.playerSprites.add(new_sprite)
-                    self.player = new_sprite
-                    # self.all_sprites.add(self.player)
-
+    def increaseCoinCounter(self):
+        self.coinCount += 1
 
 
 
     def display(self, screen):
         screen.fill('black')
 
-        self.all_sprites.draw(screen)
-        self.playerSprites.draw(screen)
+        # Render all sprites
+        #self.env_sprites.draw(screen)
+        self.blockSprites.draw(screen)
+        self.coinSprites.draw(screen)
+        self.enemySprites.draw(screen)  # enemies have to be at least behind the blocks!
+        self.playerSprites.draw(screen)  # player is in front of everything
+
+        # Render coin text
+        textSurface = self.smallFont.render("Münzen: "+str(self.coinCount),False,(255,255,255))
+        screen.blit(textSurface, (540,5))
+
 
         # Update everything
         pygame.display.update()
