@@ -40,18 +40,18 @@ class SpriteGoomba(SpriteEnemy):
 
         # Check if enemy collided with player ------------------------------------------------------------------
         if pygame.sprite.collide_rect(self, self.player):
+            print("yeee")
 
             # If the previous player location was a collision, the collision already got handled before!
-            #if not self.rect.collidepoint(self.playerPrevPos):
-            if not self.playerPrevRect.colliderect(self.rect):
+            #if not self.playerPrevRect.colliderect(self.rect):
 
-                # If not, then handle collision
-                # If the previous position was higher than the enemy, then the collision came from the top
-                # Necessary because yeeting into the enemy from the side should not kill them
-                if self.playerPrevRect.bottom < self.rect.top:
-                    self.kill()
-                else:
-                    self.player.enemyHit()  # communicate that player got hit
+            # If not, then handle collision
+            # If the previous position was higher than the enemy, then the collision came from the top
+            # Necessary because yeeting into the enemy from the side should not kill them
+            if self.playerPrevRect.bottom < self.rect.top:
+                self.kill()
+            else:
+                self.player.enemyHit()  # communicate that player got hit
 
         # Update previous position from player
         self.playerPrevRect = self.player.rect.copy()

@@ -71,11 +71,14 @@ class Game:
             # Handle events and update underlying model accordingly
             newState = topState.handleInputs()
 
+            # HandleInputs returns something when a new state has to be entered
             if newState is not None:
                 self.stateMachine.push(newState)
 
             # Display current model
             topState.display(self.screen)
+
+            pygame.display.update()
 
             # Clock makes tick tock tick tock just how clocks do woooohhhhh
             self.clock.tick(FPS)
