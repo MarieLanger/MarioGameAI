@@ -14,8 +14,21 @@ class SpriteCoin(SpriteBasic):
     def __init__(self, y_pos, x_pos, game, player):
         SpriteBasic.__init__(self, y_pos, x_pos)
 
+
+
         # Coin has color
-        self.image.fill((255,223,0))
+        #self.image.fill((255,223,0))
+
+
+        self.image = pygame.Surface((28, 28), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (212,175,55), (14, 14), 14, 28)
+        self.rect = self.image.get_rect(topleft = (x_pos, y_pos))
+
+
+
+
+
+
 
         # References
         self.game = game

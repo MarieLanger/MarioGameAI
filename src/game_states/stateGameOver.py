@@ -51,6 +51,7 @@ class StateGameOver(State):
         screen.blit(textSurface, (195,30))
 
         textSurface = self.smallFont.render("(Press space to retry)",False,(255,255,255))
+        #textSurface = self.smallFont.render ("Bitte Leertaste drücken",False,(255,255,255))
         screen.blit(textSurface, (207,100))
 
         #Update everything
