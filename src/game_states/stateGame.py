@@ -5,6 +5,7 @@ import numpy as np
 
 from .state import State
 from .stateGameOver import StateGameOver
+from .stateLevelCompleted import StateLevelCompleted
 # from .stateTitle import StateTitle    no!!!! because we want to exit this state, not put another title on top of it!!
 # otherwise circular dependency!!!!!!
 
@@ -17,6 +18,7 @@ from .sprites.spriteGoomba import SpriteGoomba
 from .sprites.spritePiranha import SpritePiranha
 from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
 from .sprites.spriteMushroom import SpriteMushroom
+from .sprites.spriteEndflag import SpriteEndflag
 
 
 class StateGame(State):
@@ -183,7 +185,7 @@ class StateGame(State):
 
         # If level completed
         if self.levelOutcome == +1:
-            pass
+            return StateLevelCompleted(self.game,self)
 
 
     def setLevelOutcome(self, value):
@@ -244,6 +246,10 @@ class StateGame(State):
                     self.enemySprites.add(new_sprite)
                 elif column[row] == 4:  #if mushroom
                     new_sprite = SpriteMushroom(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
+                    self.env_sprites.add(new_sprite)
+                    self.itemSprites.add(new_sprite)
+                elif column[row] == 10:
+                    new_sprite = SpriteEndflag(row * 16 * 2, columnIndex * 16 * 2 - offset, self,self.player)
                     self.env_sprites.add(new_sprite)
                     self.itemSprites.add(new_sprite)
 
