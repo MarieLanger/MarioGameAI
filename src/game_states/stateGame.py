@@ -164,7 +164,7 @@ class StateGame(State):
 
 
 
-        # todo: Collisions with enemies, items, end flag -----------------------------------------------
+        # todo: Collisions with end flag -----------------------------------------------
 
 
 
@@ -430,8 +430,8 @@ class StateGame(State):
         #self.helperSprites.draw(screen)
 
         # Render coin text
-        textSurface = self.smallFont.render("Münzen: "+str(self.coinCount),False,(255,255,255))
-        screen.blit(textSurface, (540,5))
+        textSurface = self.smallFont.render("Coins: "+str(self.coinCount),False,(255,255,255))
+        screen.blit(textSurface, (530,5))
 
 
         # Update everything
