@@ -40,7 +40,6 @@ class SpriteGoomba(SpriteEnemy):
 
         # Check if enemy collided with player ------------------------------------------------------------------
         if pygame.sprite.collide_rect(self, self.player):
-            print("yeee")
 
             # If the previous player location was a collision, the collision already got handled before!
             #if not self.playerPrevRect.colliderect(self.rect):

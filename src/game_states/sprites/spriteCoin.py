@@ -21,7 +21,7 @@ class SpriteCoin(SpriteBasic):
 
 
         self.image = pygame.Surface((28, 28), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (212,175,55), (14, 14), 14, 28)
+        pygame.draw.circle(self.image, (182,155,25), (14, 14), 14, 28)
         self.rect = self.image.get_rect(topleft = (x_pos, y_pos))
 
 
