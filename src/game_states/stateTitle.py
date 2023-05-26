@@ -1,5 +1,6 @@
 import pygame
 import sys
+import json
 from .state import State
 from .stateGame import StateGame
 
@@ -17,12 +18,12 @@ class StateTitle(State):
         self.text_pos = (100, 20)  #x-position(low:left,high:right)   y-position (low:up, high:down)
         self.text_col = (255,255,255)
 
-        self.menu = ("Human Input", "AI input","other")
+        self.menu = ("Human input", "AI input","other")
         self.menu_pos = (30, 150)
         self.menu_col = (255,255,255)
         self.menu_distances = 80  # distance between the entries
 
-        self.menuSelection = 0  # 0th, 1st, or 2nd option
+        #self.menuSelection = 0  # 0th, 1st, or 2nd option
         self.menuSelection_col = (255,105,180)  # pink
 
         # Sub-menu selections
@@ -31,17 +32,24 @@ class StateTitle(State):
         self.selection_choices = ("speedrun","speedrun + coins", "speedrun + coins + enemies")
         self.aiSelection_choices = ("AI1", "AI2", "AI3") # todo: add new ones here later
 
-        self.level_selected = 0  # these are all indices of the above lists
-        self.aiType_selected = 0
-        self.selection_selected = 0
-        self.aiSelection_selected = 0
+        #self.level_selected = 0  # these are all indices of the above lists
+        #self.aiType_selected = 0
+        #self.selection_selected = 0
+        #self.aiSelection_selected = 0
 
         self.subSelecting = False  # Does user select the sub-options atm or not? (False=not)
         self.subSelection_selected = 0
 
 
 
+        # load titleState.json in data folder and adjust model according to it
 
+        data = json.load(open('../data/titleState.json'))
+        self.menuSelection = data['menuSelection']
+        self.level_selected = data['level_selected']
+        self.aiType_selected = data['aiType_selected']
+        self.selection_selected = data['selection_selected']
+        self.aiSelection_selected = data['aiSelection_selected']
 
 
         # Initialize the font
@@ -62,7 +70,6 @@ class StateTitle(State):
 
 
             if event.type == pygame.KEYDOWN:
-
 
                 if event.key == pygame.K_x:  # x key to switch from main menu to submenu
                     self.subSelecting = not self.subSelecting
@@ -114,6 +121,11 @@ class StateTitle(State):
                     if event.key == pygame.K_SPACE:
                         if self.menuSelection==0:
                             return StateGame(self.game)
+
+
+                # finally, save everything in a json file
+                self._saveTitleState()
+
         return None
 
 
@@ -206,3 +218,25 @@ class StateTitle(State):
     def _displayText(self,content,color,position,font,screen):
         textSurface = font.render(content,False,color)
         screen.blit(textSurface, position)
+
+
+    def _saveTitleState(self):
+        """
+        Saves the current state into a json file.
+        Happens automatically as soon as inputs got changed.
+        """
+        with open('../data/titleState.json', 'wb') as f:
+
+            if self.level_selected==0:
+                level= 1
+            else:
+                level = self.level_selected
+
+            data = {"menuSelection":self.menuSelection,
+                    "level_selected": self.level_selected,
+                    "level": level,
+                    "aiType_selected": self.aiType_selected,
+                    "selection_selected": self.selection_selected,
+                    "aiSelection_selected": self.aiSelection_selected }
+            #json.dump(data,f)
+            f.write(json.dumps(data, ensure_ascii=False).encode("utf8"))

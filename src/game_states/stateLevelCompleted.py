@@ -18,6 +18,8 @@ class StateLevelCompleted(State):
         self.mediumFont = pygame.font.SysFont('Comic Sans MS', 25)
         self.bigFont = pygame.font.SysFont('Comic Sans MS', 45)
 
+        self.game.stateMachine.peek().increaseLevel()
+
     def handleInputs(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,9 +49,9 @@ class StateLevelCompleted(State):
         textSurface = self.bigFont.render("Level completed! :)",False,(255,255,255))
         screen.blit(textSurface, (130,30))
 
-        textSurface = self.smallFont.render("(Press space to retry)",False,(255,255,255))
+        textSurface = self.smallFont.render("(Press space to start new level)",False,(255,255,255))
         #textSurface = self.smallFont.render ("Bitte Leertaste drücken",False,(255,255,255))
-        screen.blit(textSurface, (207,100))
+        screen.blit(textSurface, (170,100))
 
         #Update everything
         #pygame.display.update()

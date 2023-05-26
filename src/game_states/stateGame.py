@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import numpy as np
+import json
 
 from .state import State
 from .stateGameOver import StateGameOver
@@ -29,15 +30,11 @@ class StateGame(State):
     def __init__(self, game):
         self.game = game
 
+        data = json.load(open('../data/titleState.json'))
+        self.level = data['level'] # a number from 1 to 10
+
         # Game related variables --------------------------------------------------------------
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
-
-        # Load level ---------------------------------------------------------------------------
-        path = "\..\data\levels"
-        filename = "\level1.txt"
-        fullpath = os.getcwd() + path + filename
-        self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
-        print("the shape of the level is:", self.levelMatrix.shape)
 
         self.initializeLevel()
 
@@ -48,6 +45,13 @@ class StateGame(State):
         Putting this into a separate method allows to reset the level after a game over got encountered
         :return:
         """
+        # Load level ---------------------------------------------------------------------------
+        path = "\..\data\levels"
+        filename = "\level" + str(self.level) + ".txt"
+        fullpath = os.getcwd() + path + filename
+        self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
+        print("the shape of the level is:", self.levelMatrix.shape)
+
         # Necessary for movement at borders.
         # When Peach is close to a border or goes back, Peach moves and the sprites stay still.
         # When Peach moves forward, the level moves and peach stays still
@@ -417,6 +421,8 @@ class StateGame(State):
     def increaseCoinCounter(self):
         self.coinCount += 1
 
+    def increaseLevel(self):
+        self.level += 1
 
 
     def display(self, screen):
