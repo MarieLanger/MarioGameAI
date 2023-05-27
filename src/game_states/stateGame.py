@@ -20,6 +20,7 @@ from .sprites.spritePiranha import SpritePiranha
 from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
 from .sprites.spriteMushroom import SpriteMushroom
 from .sprites.spriteEndflag import SpriteEndflag
+from .sprites.spriteKoopa import SpriteKoopa
 
 
 class StateGame(State):
@@ -242,6 +243,10 @@ class StateGame(State):
                     self.coinSprites.add(new_sprite)
                 elif column[row] == 7:  #if goomba
                     new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                    self.env_sprites.add(new_sprite)
+                    self.enemySprites.add(new_sprite)
+                elif column[row] == 8:  #if koopa
+                    new_sprite = SpriteKoopa(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites, self.enemySprites,self.env_sprites)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
                 elif column[row] == 9:  #if piranha

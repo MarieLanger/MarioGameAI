@@ -171,6 +171,7 @@ class SpritePlayer(pygame.sprite.Sprite):
         if self.velocityY == 0:
             self.velocityY = -11 #-4
 
+
     def jumpKeyReleased(self):
         if self.velocityY < -5:
             self.velocityY = self.velocityY/2 +1
