@@ -47,13 +47,18 @@ class SpriteGoomba(SpriteEnemy):
             # If not, then handle collision
             # If the previous position was higher than the enemy, then the collision came from the top
             # Necessary because yeeting into the enemy from the side should not kill them
-            if self.playerPrevRect.bottom < self.rect.top:
+            # todo: note, changed it into <= (before: <)
+            if self.playerPrevRect.bottom <= self.rect.top:
+                self.player.velocityY = -11
+                self.player.jumpKeyReleased()
                 self.kill()
             else:
                 if not self.player.immunity:
                     player_hit = self.player.enemyHit()  # communicate that player got hit
                     # True if hit, False if player "hits back" via star
                     if not player_hit:
+                        self.player.velocityY = -11
+                        self.player.jumpKeyReleased()
                         self.kill()
 
         # Update previous position from player

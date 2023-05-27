@@ -33,7 +33,7 @@ class KillEnvironmentSpritesSprite(pygame.sprite.Sprite):
         self.image = pygame.Surface((6,480))
         self.image.fill((255, 105, 180))
         self.rect = self.image.get_rect()
-        self.rect.bottomleft = (-40,440)
+        self.rect.bottomleft = (-150,440)
 
         self.env_sprites = env_sprites
 
