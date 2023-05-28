@@ -19,6 +19,8 @@ from .sprites.spriteGoomba import SpriteGoomba
 from .sprites.spritePiranha import SpritePiranha
 from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
 from .sprites.spriteMushroom import SpriteMushroom
+from .sprites.spriteStar import SpriteStar
+from .sprites.spriteContainer import SpriteContainer
 from .sprites.spriteEndflag import SpriteEndflag
 from .sprites.spriteKoopa import SpriteKoopa
 
@@ -216,6 +218,16 @@ class StateGame(State):
                     new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2 - offset)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
+                elif column[row] == 3:  # If container
+
+                    # todo: for now only coins
+                    content_sprite = SpriteCoin(30, columnIndex * 16 * 2 - offset, self,self.player)
+                    self.env_sprites.add(content_sprite)
+                    self.coinSprites.add(content_sprite)
+
+                    new_sprite = SpriteContainer(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites, self.enemySprites,self.env_sprites, content_sprite)
+                    self.env_sprites.add(new_sprite)
+                    self.blockSprites.add(new_sprite)
                 elif column[row] == 2:  # If pipe
                     # If column above has pipe, then pipe has already been created
                     if column[row-1] == 2:
@@ -255,6 +267,10 @@ class StateGame(State):
                     self.enemySprites.add(new_sprite)
                 elif column[row] == 4:  #if mushroom
                     new_sprite = SpriteMushroom(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
+                    self.env_sprites.add(new_sprite)
+                    self.itemSprites.add(new_sprite)
+                elif column[row] == 5:  #if star
+                    new_sprite = SpriteStar(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
                     self.env_sprites.add(new_sprite)
                     self.itemSprites.add(new_sprite)
                 elif column[row] == 10:

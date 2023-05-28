@@ -68,6 +68,8 @@ class SpritePlayer(pygame.sprite.Sprite):
                 self.immunityCounter = 0
                 self.image.fill((255, 105, 180))
 
+        self.peekState().updateState()
+
 
 
 
@@ -187,17 +189,24 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 
     def enemyHit(self):
+
+        # Check top state to see how to handle collision
+        top_state = self.peekState()
+        player_hit = top_state.handleEnemyCollision()  # here the pop state happens + other states make immune
+
+
         # Player can only get hit when player is not immune
         if not self.immunity:
-            # Check top state to see how to handle collision
-            top_state = self.peekState()
-            player_hit = top_state.handleEnemyCollision()  # here the pop state happens + other states make immune
+            if player_hit:  # false if star, otherwise true
+                if len(self.states) == 1:
+                    self.game.setLevelOutcome(-1)
+                elif len(self.states) > 1:
+                    self.removeState(True)
 
-            # If player has the lowest state, gets hit and is not immune, then game over
-            if len(self.states) == 1 and player_hit and not self.immunity:
-                self.game.setLevelOutcome(-1)
 
-            return player_hit  # True if player got hit, False if player "hits back" via star
+        # If player is immune, player only hits back when star
+
+        return player_hit  # True if player got hit, False if player "hits back" via star
 
 
 
@@ -206,29 +215,16 @@ class SpritePlayer(pygame.sprite.Sprite):
     def addState(self,state):
         self.states.append(state)
         # Then you go from small to big
-        if len(self.states) == 2:
-            tmp = self.rect.bottomleft
-            self.image = pygame.Surface(self.peekState().size)
-            self.image.fill((255, 105, 180))
-            self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
-            self.rect.bottomleft = tmp
 
-    def removeState(self):
-        self.immunity = True
-        self.image.fill((255, 216, 240))
+    def removeState(self, immunityreset):
+        # If immunityreset is set to false, immunity does not get set when state gets removed
+        self.immunity = immunityreset
 
-        if len(self.states) == 2:
-            tmp = self.rect.bottomleft
-            self.states.pop()
-            self.image = pygame.Surface(self.peekState().size)
+        self.peekState().removeAppearance()
+        if immunityreset:
             self.image.fill((255, 216, 240))
-            self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
-            self.rect.bottomleft = tmp
-        elif len(self.states) == 1:
-            # return something
-            pass
-        else:
-            self.states.pop()
+        #self.states.pop()
+
 
     def peekState(self):
         return self.states[-1]
@@ -286,12 +282,6 @@ class PlayerState():
         """
         pass
 
-    def spaceKeyPressed(self):
-        """
-        FireMario should be able to create a flame, the other ones don't
-        :return:
-        """
-        pass
 
 class PlayerStateNormal():
     """
@@ -316,13 +306,16 @@ class PlayerStateNormal():
         :return:
         """
         if itemtype == "mushroom":
-            self.player.addState(PlayerStateBig(self.player))
-        elif itemtype == "fireflower":
-            self.player.addState(PlayerStateBig(self.player))
-            self.player.addState(PlayerStateFireFlower(self.player))
+            newstate = PlayerStateBig(self.player)
+            self.player.addState(newstate)
+            newstate.changeAppearance()
         elif itemtype == "star":
-            self.player.addState(PlayerStateBig(self.player))
-            self.player.add(PlayerStateStar(self.player))
+            newstate = PlayerStateStar(self.player)
+            self.player.addState(newstate)
+            newstate.changeAppearance()
+
+    def updateState(self):
+        pass
 
 
 
@@ -341,7 +334,7 @@ class PlayerStateBig():
         self.player = player
 
     def handleEnemyCollision(self):
-        self.player.removeState()
+        #self.player.removeState()
         return True  # yes, player got hit
 
     def handleItemCollision(self, itemtype):
@@ -349,10 +342,27 @@ class PlayerStateBig():
         If the item is lower or equal to current state, do nothing, otherwise, add state
         :return:
         """
-        if itemtype == "fireflower":
-            self.player.addState(PlayerStateFireFlower(self.player))
-        elif itemtype == "star":
-            self.player.add(PlayerStateStar(self.player))
+        if itemtype == "star":
+            newstate = PlayerStateStar(self.player)
+            self.player.addState(newstate)
+            newstate.changeAppearance()
+
+    def changeAppearance(self):
+        tmp = self.player.rect.bottomleft
+        self.player.image = pygame.Surface(self.player.peekState().size)
+        self.player.image.fill((255, 105, 180))
+        self.player.rect = self.player.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
+        self.player.rect.bottomleft = tmp
+
+    def removeAppearance(self):
+        tmp = self.player.rect.bottomleft
+        self.player.states.pop()
+        self.player.image = pygame.Surface(self.player.peekState().size)
+        self.player.rect = self.player.image.get_rect()
+        self.player.rect.bottomleft = tmp
+
+    def updateState(self):
+        pass
 
 
 
@@ -370,6 +380,9 @@ class PlayerStateStar():
         # reference
         self.player = player
 
+        # counter
+        self.counter = 0
+
     def handleEnemyCollision(self):
         #self.player.removeState()
         return False  # no, enemy should get hit instead
@@ -379,37 +392,30 @@ class PlayerStateStar():
         If the item is lower or equal to current state, do nothing, otherwise, add state
         :return:
         """
-        pass
+        if itemtype == "mushroom":
+            #self.player.removeState(False)
+            #self.player.addState(PlayerStateBig(self.player))
+
+            newstate = PlayerStateBig(self.player)
+            self.player.addState(newstate)
+            newstate.changeAppearance()
+            
+            self.player.addState(self)
+            self.changeAppearance()
+
+    def changeAppearance(self):
+        #self.player.image.fill((180, 105, 255))
+        #self.player.image.fill((167, 80, 255))
+        self.player.image.fill((127,81,246))
+
+    def removeAppearance(self):
+        self.player.image.fill((255, 105, 180))
+
+    def updateState(self):
+        self.counter += 1
+
+        if self.counter > 100:
+            self.player.peekState().removeAppearance()
+            self.player.removeState(False)
 
 
-class PlayerStateFireFlower():
-    """
-    Class that holds the bigger state of Peach
-    """
-    def __init__(self, player):
-
-        # width, height
-        self.size = [16 * 2, 32 * 2]
-        self.color = (255, 105, 180)
-
-        # reference
-        self.player = player
-
-    def handleEnemyCollision(self):
-        self.player.removeState()
-        return True  # yes, player got hit
-
-    def handleItemCollision(self, itemtype):
-        """
-        If the item is lower or equal to current state, do nothing, otherwise, add state
-        :return:
-        """
-        if itemtype == "star":
-            self.player.add(PlayerStateStar(self.player))
-
-    def spaceKeyPressed(self):
-        """
-        FireMario should be able to create a flame, the other ones don't
-        :return:
-        """
-        pass

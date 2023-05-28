@@ -45,11 +45,10 @@ class SpriteKoopa(SpriteGoomba):
         - Update enemy model (e.g. new position)
         """
 
-        print("before:  ", self.playerPrevRect.bottom, self.player.rect.bottom, self.rect.top, pygame.sprite.collide_rect(self, self.player))
+
 
         # Check if enemy collided with player ------------------------------------------------------------------
         if pygame.sprite.collide_rect(self, self.player):
-            print("Collision!")
 
             # If the previous player location was a collision, the collision already got handled before!
             #if not self.playerPrevRect.colliderect(self.rect):
@@ -64,19 +63,16 @@ class SpriteKoopa(SpriteGoomba):
                 self.kill()
             else:
                 if not self.player.immunity:
-                    print("WHY ARE YOU HERE")
-                    print(self.playerPrevRect.bottom, self.rect.top)
                     player_hit = self.player.enemyHit()  # communicate that player got hit
                     # True if hit, False if player "hits back" via star
                     if not player_hit:
-                        self.player.velocityY = -11
-                        self.player.jumpKeyReleased()
-                        self._createKoopaShell()
+                        #self.player.velocityY = -11
+                        #self.player.jumpKeyReleased()
+                        #self._createKoopaShell()
                         self.kill()
 
         # Update previous position from player
         self.playerPrevRect = self.player.rect.copy()
-        print("after:  ", self.playerPrevRect.bottom, self.player.rect.bottom,self.rect.top)
 
 
         # Handle walking -----------------------------------------------------------------------------------------
