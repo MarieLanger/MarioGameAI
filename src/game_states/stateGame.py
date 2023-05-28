@@ -1,28 +1,26 @@
-import pygame
-import sys
-import os
-import numpy as np
 import json
+import os
+import sys
 
+import numpy as np
+import pygame
+
+from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
+from .sprites.spriteBlock import SpriteBlock
+from .sprites.spriteCoin import SpriteCoin
+from .sprites.spriteContainer import SpriteContainer
+from .sprites.spriteEndflag import SpriteEndflag
+from .sprites.spriteGoomba import SpriteGoomba
+from .sprites.spriteKoopa import SpriteKoopa
+from .sprites.spriteMushroom import SpriteMushroom
+from .sprites.spritePipe import SpritePipe
+from .sprites.spritePiranha import SpritePiranha
+from .sprites.spritePlayer import SpritePlayer
+from .sprites.spriteStar import SpriteStar
+from .sprites.spriteTest import SpriteTest  # YOU NEED A DOT BEFORE THE FOLDER NAME AAAAAAAAAAAAAAAAAAAAHHHHHHH
 from .state import State
 from .stateGameOver import StateGameOver
 from .stateLevelCompleted import StateLevelCompleted
-# from .stateTitle import StateTitle    no!!!! because we want to exit this state, not put another title on top of it!!
-# otherwise circular dependency!!!!!!
-
-from .sprites.spriteTest import SpriteTest  # YOU NEED A DOT BEFORE THE FOLDER NAME AAAAAAAAAAAAAAAAAAAAHHHHHHH
-from .sprites.spriteBlock import SpriteBlock
-from .sprites.spritePlayer import SpritePlayer
-from .sprites.spriteCoin import SpriteCoin
-from .sprites.spritePipe import SpritePipe
-from .sprites.spriteGoomba import SpriteGoomba
-from .sprites.spritePiranha import SpritePiranha
-from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
-from .sprites.spriteMushroom import SpriteMushroom
-from .sprites.spriteStar import SpriteStar
-from .sprites.spriteContainer import SpriteContainer
-from .sprites.spriteEndflag import SpriteEndflag
-from .sprites.spriteKoopa import SpriteKoopa
 
 
 class StateGame(State):
@@ -34,13 +32,12 @@ class StateGame(State):
         self.game = game
 
         data = json.load(open('../data/titleState.json'))
-        self.level = data['level'] # a number from 1 to 10
+        self.level = data['level']  # a number from 1 to 10
 
         # Game related variables --------------------------------------------------------------
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
 
         self.initializeLevel()
-
 
     def initializeLevel(self):
         """
@@ -74,7 +71,7 @@ class StateGame(State):
         # Initialized by 25: maximally we see the 25th tiles in x-dimension
         # 24: 0-24 = 25 entries
         self.levelProgress = 23
-        self.pixelProgress = 23*32
+        self.pixelProgress = 23 * 32
 
         # Create all the sprite objects -------------------------------------------------
         # Creating the sprite groups
@@ -93,10 +90,6 @@ class StateGame(State):
         # Communicate level completed (+1) or game over (-1)
         self.levelOutcome = 0
 
-
-
-
-
         # Actually creating the first sprites at the start of the level + adding them into a group ---------------
 
         # Creating the player
@@ -112,7 +105,6 @@ class StateGame(State):
         self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
 
         self.env_sprites.add(SpriteTest())  # todo: remove this line later
-
 
     def handleInputs(self):
         # Note down inputs --------------------------------------------
@@ -143,17 +135,12 @@ class StateGame(State):
                     self.player.jumpKeyReleased()
         # From here: Use noted down inputs to change model!
 
-
-
-
-
         # HANDLE COLLISIONS WITH BLOCKS -----------------------------------------------------------------------------
 
         # Left/Right first
         # Idea: Let peach move where she wants and afterwards check if a collision occurred with it
         # While doing this, I always have to handle borders
         self._borderHandling(self.leftKeyHold, self.rightKeyHold)
-
 
         # You can only jump if you touch the ground, check this here and handle key inputs
         (topCol, bottomCol) = self.player.checkBottomTopTouches()
@@ -170,30 +157,21 @@ class StateGame(State):
             # If I hit something on top I stop jumping
             # I am not a quantum particle tunnel through an energy barrier
 
-
-
-
         # todo: Collisions with end flag -----------------------------------------------
-
-
-
-
-
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
         # Update all sprites
-        self.env_sprites.update()    # during update, setLevelOutcome may or may not be called
+        self.env_sprites.update()  # during update, setLevelOutcome may or may not be called
         self.playerSprites.update()
         self.helperSprites.update()
 
         # If game over
         if self.levelOutcome == -1:
-            return StateGameOver(self.game,self)
+            return StateGameOver(self.game, self)
 
         # If level completed
         if self.levelOutcome == +1:
-            return StateLevelCompleted(self.game,self)
-
+            return StateLevelCompleted(self.game, self)
 
     def setLevelOutcome(self, value):
         # value: -1 game over   +1 completed
@@ -221,25 +199,26 @@ class StateGame(State):
                 elif column[row] == 3:  # If container
 
                     # todo: for now only coins
-                    #content_sprite = SpriteCoin(30, columnIndex * 16 * 2 - offset, self,self.player)
-                    #self.env_sprites.add(content_sprite)
-                    #self.coinSprites.add(content_sprite)
+                    # content_sprite = SpriteCoin(30, columnIndex * 16 * 2 - offset, self,self.player)
+                    # self.env_sprites.add(content_sprite)
+                    # self.coinSprites.add(content_sprite)
 
                     content_sprite = SpriteStar(30, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
                     self.env_sprites.add(content_sprite)
                     self.itemSprites.add(content_sprite)
 
-                    new_sprite = SpriteContainer(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites, self.enemySprites,self.env_sprites, content_sprite)
+                    new_sprite = SpriteContainer(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
+                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
                 elif column[row] == 2:  # If pipe
                     # If column above has pipe, then pipe has already been created
-                    if column[row-1] == 2:
+                    if column[row - 1] == 2:
                         break
                     height = 32
                     i = 1
                     while True:
-                        if column[row+i] == 2:
+                        if column[row + i] == 2:
                             height += 32
                             i += 1
                         else:
@@ -253,43 +232,43 @@ class StateGame(State):
                     new_sprite = SpritePlayer(row * 16 * 2, 2 * 16 * 2, self.blockSprites)
                     self.playerSprites.add(new_sprite)
                     self.player = new_sprite"""
-                elif column[row] == 6:  #if coin
-                    new_sprite = SpriteCoin(row * 16 * 2, columnIndex * 16 * 2 - offset, self,self.player)
+                elif column[row] == 6:  # if coin
+                    new_sprite = SpriteCoin(row * 16 * 2, columnIndex * 16 * 2 - offset, self, self.player)
                     self.env_sprites.add(new_sprite)
                     self.coinSprites.add(new_sprite)
-                elif column[row] == 7:  #if goomba
-                    new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                elif column[row] == 7:  # if goomba
+                    new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
+                                              self.blockSprites)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
-                elif column[row] == 8:  #if koopa
-                    new_sprite = SpriteKoopa(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites, self.enemySprites,self.env_sprites)
+                elif column[row] == 8:  # if koopa
+                    new_sprite = SpriteKoopa(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
+                                             self.blockSprites, self.enemySprites, self.env_sprites)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
-                elif column[row] == 9:  #if piranha
+                elif column[row] == 9:  # if piranha
                     new_sprite = SpritePiranha(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
-                elif column[row] == 4:  #if mushroom
-                    new_sprite = SpriteMushroom(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                elif column[row] == 4:  # if mushroom
+                    new_sprite = SpriteMushroom(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
+                                                self.blockSprites)
                     self.env_sprites.add(new_sprite)
                     self.itemSprites.add(new_sprite)
-                elif column[row] == 5:  #if star
+                elif column[row] == 5:  # if star
                     new_sprite = SpriteStar(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
                     self.env_sprites.add(new_sprite)
                     self.itemSprites.add(new_sprite)
                 elif column[row] == 10:
-                    new_sprite = SpriteEndflag(row * 16 * 2, columnIndex * 16 * 2 - offset, self,self.player)
+                    new_sprite = SpriteEndflag(row * 16 * 2, columnIndex * 16 * 2 - offset, self, self.player)
                     self.env_sprites.add(new_sprite)
                     self.itemSprites.add(new_sprite)
 
-
     def _evaluateTilePos(self):
         # If another tile got touched
-        if int(self.pixelProgress/32) > self.levelProgress:
+        if int(self.pixelProgress / 32) > self.levelProgress:
             self.levelProgress += 1
-            self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress%32)
-
-
+            self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress % 32)
 
     def _checkCollisions(self):
         """
@@ -300,7 +279,7 @@ class StateGame(State):
         move = 0
         col_list = self.player.checkCollisions_blocks()
         if len(col_list) == 0:
-            return move # No clipping occured
+            return move  # No clipping occured
         else:
             for collided in col_list:
 
@@ -322,7 +301,6 @@ class StateGame(State):
             # At the end, return the absolute biggest move
             return move
 
-
     def _borderHandling(self, leftinput, rightinput):
         """
         This method deals with the logic that when peach is near a border, the level should not move anymore.
@@ -337,7 +315,6 @@ class StateGame(State):
         # If player is too close to the border, don't allow to move any further
         if self.borderCloseness > 59:
             leftinput = False
-
 
         # If the level moves + peach stays still
         if self.levelMoving:
@@ -394,9 +371,9 @@ class StateGame(State):
                     adjusted_pos = self._checkCollisions()
                     if adjusted_pos != 0:
                         for sprite in self.playerSprites.sprites():
-                            sprite.move_x(adjusted_pos)   # i flipped the sign and it worked?
+                            sprite.move_x(adjusted_pos)  # i flipped the sign and it worked?
                         self.borderCloseness += -adjusted_pos
-                else: # else, a clip occured and do the above
+                else:  # else, a clip occured and do the above
 
                     # Move peach 4 pixels to the right
                     for sprite in self.playerSprites.sprites():
@@ -411,8 +388,8 @@ class StateGame(State):
                     else:
                         # Move whole level and check for collisions again
                         for sprite in self.env_sprites.sprites():
-                            sprite.moveLeft(5-self.borderCloseness)
-                        self.pixelProgress += 5-self.borderCloseness
+                            sprite.moveLeft(5 - self.borderCloseness)
+                        self.pixelProgress += 5 - self.borderCloseness
                         adjusted_pos = self._checkCollisions()
                         if adjusted_pos != 0:
                             for sprite in self.env_sprites.sprites():
@@ -420,7 +397,7 @@ class StateGame(State):
                             self.pixelProgress += adjusted_pos
 
                         # Clean up
-                        self.pixelProgress += 5-self.borderCloseness
+                        self.pixelProgress += 5 - self.borderCloseness
                         self.levelMoving = True
                         self.borderCloseness = 0
                         self._evaluateTilePos()
@@ -438,23 +415,17 @@ class StateGame(State):
                         sprite.move_x(-adjusted_pos)
                     self.borderCloseness += adjusted_pos
 
-
-
-
-
-
     def increaseCoinCounter(self):
         self.coinCount += 1
 
     def increaseLevel(self):
         self.level += 1
 
-
     def display(self, screen):
         screen.fill('black')
 
         # Render all sprites
-        #self.env_sprites.draw(screen)
+        # self.env_sprites.draw(screen)
 
         self.enemySprites.draw(screen)  # enemies have to be at least behind the blocks!
 
@@ -464,12 +435,11 @@ class StateGame(State):
 
         self.playerSprites.draw(screen)  # player is in front of everything
 
-        #self.helperSprites.draw(screen)
+        # self.helperSprites.draw(screen)
 
         # Render coin text
-        textSurface = self.smallFont.render("Coins: "+str(self.coinCount),False,(255,255,255))
-        screen.blit(textSurface, (530,5))
-
+        textSurface = self.smallFont.render("Coins: " + str(self.coinCount), False, (255, 255, 255))
+        screen.blit(textSurface, (530, 5))
 
         # Update everything
-        #pygame.display.update()
+        # pygame.display.update()
