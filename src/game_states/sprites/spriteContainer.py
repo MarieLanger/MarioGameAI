@@ -55,10 +55,11 @@ class SpriteContainer(SpriteBlock):
             self.content.rect.topleft = self.rect.bottomleft
         else:
             self.content.rect.bottomleft = self.rect.topleft
+            self.content.activate()
 
 
 
-            # Adding functionality to methods because colliderect also needs to be updated
+    # Adding functionality to methods because colliderect also needs to be updated
     def moveLeft(self, value=5):
         self.rect.x -= value
         self.collideRect.x -= value
