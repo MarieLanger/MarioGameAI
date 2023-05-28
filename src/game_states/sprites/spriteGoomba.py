@@ -53,13 +53,14 @@ class SpriteGoomba(SpriteEnemy):
                 self.player.jumpKeyReleased()
                 self.kill()
             else:
-                if not self.player.immunity:
-                    player_hit = self.player.enemyHit()  # communicate that player got hit
-                    # True if hit, False if player "hits back" via star
-                    if not player_hit:
-                        self.player.velocityY = -11
-                        self.player.jumpKeyReleased()
-                        self.kill()
+                #if not self.player.immunity:
+                player_hit = self.player.enemyHit()  # communicate that player got hit
+                # True if hit, False if player "hits back" via star
+                if not player_hit:
+                    #self.player.velocityY = -11
+                    #self.player.jumpKeyReleased()
+                    self.kill()
+                # If the player got hit, the enemy does not care!
 
         # Update previous position from player
         self.playerPrevRect = self.player.rect.copy()

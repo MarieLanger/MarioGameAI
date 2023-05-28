@@ -92,8 +92,8 @@ class SpriteKoopaShell(SpriteGoomba):
                     player_hit = self.player.enemyHit()  # communicate that player got hit
                     # True if hit, False if player "hits back" via star
                     if not player_hit:
-                        self.player.velocityY = -11
-                        self.player.jumpKeyReleased()
+                        #self.player.velocityY = -11
+                        #self.player.jumpKeyReleased()
                         self.kill()
 
         # Kill enemies

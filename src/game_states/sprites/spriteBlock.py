@@ -13,7 +13,8 @@ class SpriteBlock(SpriteBasic):
         SpriteBasic.__init__(self, y_pos, x_pos)
 
         # Block-color
-        self.image.fill((118,134,146))
+        #self.image.fill((118,134,146))
+        self.image.fill((98,114,126))
 
 
 
