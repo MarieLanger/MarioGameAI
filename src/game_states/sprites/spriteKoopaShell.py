@@ -15,9 +15,12 @@ class SpriteKoopaShell(SpriteGoomba):
         SpriteGoomba.__init__(self, y_pos, x_pos, player, blockgroup)
 
         # It's not a circle but I like it lmao?
-        self.image = pygame.Surface((28, 14), pygame.SRCALPHA)
+        self.image = pygame.Surface((28, 17), pygame.SRCALPHA)
         pygame.draw.circle(self.image, (141,2,31), (14, 14), 14, 28)
         self.rect = self.image.get_rect(topleft = (x_pos, y_pos))
+
+        # mask for pixel perfect collision
+        self.mask = pygame.mask.from_surface(self.image)
 
         # Enemies have color
         self.image.fill((141,2,31))
@@ -51,11 +54,14 @@ class SpriteKoopaShell(SpriteGoomba):
 
         # todo: Pygame does not do pixel perfect collision
         # todo: which means that when the 2 things collide with each other only with 1 pixel, it does not get noticed
+        # todo: https://stackoverflow.com/questions/62399078/how-to-use-pixel-perfect-collision-with-two-images-pygame
+        # https://stackoverflow.com/questions/48025283/pixel-perfect-collision-detection-for-sprites-with-a-transparent-background
         # Check if enemy collided with player ------------------------------------------------------------------
 
         # top has collision AND (right side of player collided OR left side of player collided)
         if pygame.sprite.collide_rect(self, self.player):
-            print("??????????????????")
+        #if pygame.sprite.collide_mask(self, self.player):
+            print("Collision!!")
             # If the previous player location was a collision, the collision already got handled before!
             #if not self.playerPrevRect.colliderect(self.rect):
 
@@ -64,6 +70,7 @@ class SpriteKoopaShell(SpriteGoomba):
             # Necessary because yeeting into the enemy from the side should not kill them
             # todo: note, changed it into <= (before: <)
             if self.playerPrevRect.bottom <= self.rect.top:
+                print("Yo")
 
 
                 # code for direction change goes here
@@ -75,7 +82,10 @@ class SpriteKoopaShell(SpriteGoomba):
                     else:
                         self.direction = -1  # if player stomped from right, go left
 
-                self.player.velocityY = -11
+                # todo: The problem seemed to be that i was so "deep" in the shell that even after I jumped up, I
+                # was not able to get "out" of it.
+                # The solution is now to just make the player jump higher
+                self.player.velocityY = -17
                 self.player.jumpKeyReleased()
             else:
                 if not self.player.immunity:
@@ -86,6 +96,15 @@ class SpriteKoopaShell(SpriteGoomba):
                         self.player.jumpKeyReleased()
                         self.kill()
 
+        # Kill enemies
+        enemyList = pygame.sprite.spritecollide(self,self.enemyGroup,False)
+        print(enemyList)
+
+        if self.direction != 0:
+            if len(enemyList)!=0:
+                for i in range(len(enemyList)):
+                    if enemyList[i] is not self:
+                        enemyList[i].kill()
         # Update previous position from player
         self.playerPrevRect = self.player.rect.copy()
 
