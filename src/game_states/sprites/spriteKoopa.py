@@ -26,7 +26,7 @@ class SpriteKoopa(SpriteGoomba):
         self.playerPrevRect = self.player.rect.copy()
 
         # Goombas can walk left or right
-        self.direction = -1
+        self.direction = +1
 
         self.blockGroup = blockgroup
         self.enemyGroup = enemygroup

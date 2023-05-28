@@ -21,6 +21,9 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
         self.rect.topleft = (x_pos, y_pos)
 
+        # mask for pixel perfect collision
+        self.mask = pygame.mask.from_surface(self.image)
+
 
         # Jumping
         self.velocityY = 0
@@ -150,7 +153,12 @@ class SpritePlayer(pygame.sprite.Sprite):
                         self.rect.bottom = collided.rect.top #- 1
                         self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
 
-
+    def applyGravity(self):
+        # terminal velocity
+        if self.velocityY + self.gravity > 6:
+            self.velocityY = 6
+        else:
+            self.velocityY += self.gravity
 
 
 
@@ -171,17 +179,11 @@ class SpritePlayer(pygame.sprite.Sprite):
         if self.velocityY == 0:
             self.velocityY = -11 #-4
 
-
     def jumpKeyReleased(self):
         if self.velocityY < -5:
             self.velocityY = self.velocityY/2 +1
 
-    def applyGravity(self):
-        # terminal velocity
-        if self.velocityY + self.gravity > 6:
-            self.velocityY = 6
-        else:
-            self.velocityY += self.gravity
+
 
 
     def enemyHit(self):
@@ -196,6 +198,9 @@ class SpritePlayer(pygame.sprite.Sprite):
                 self.game.setLevelOutcome(-1)
 
             return player_hit  # True if player got hit, False if player "hits back" via star
+
+
+
 
 
     def addState(self,state):
@@ -319,12 +324,7 @@ class PlayerStateNormal():
             self.player.addState(PlayerStateBig(self.player))
             self.player.add(PlayerStateStar(self.player))
 
-    def spaceKeyPressed(self):
-        """
-        FireMario should be able to create a flame, the other ones don't
-        :return:
-        """
-        pass
+
 
 
 class PlayerStateBig():
@@ -354,12 +354,7 @@ class PlayerStateBig():
         elif itemtype == "star":
             self.player.add(PlayerStateStar(self.player))
 
-    def spaceKeyPressed(self):
-        """
-        FireMario should be able to create a flame, the other ones don't
-        :return:
-        """
-        pass
+
 
 
 class PlayerStateStar():
@@ -376,7 +371,7 @@ class PlayerStateStar():
         self.player = player
 
     def handleEnemyCollision(self):
-        self.player.removeState()
+        #self.player.removeState()
         return False  # no, enemy should get hit instead
 
     def handleItemCollision(self, itemtype):
@@ -386,12 +381,6 @@ class PlayerStateStar():
         """
         pass
 
-    def spaceKeyPressed(self):
-        """
-        FireMario should be able to create a flame, the other ones don't
-        :return:
-        """
-        pass
 
 class PlayerStateFireFlower():
     """
