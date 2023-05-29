@@ -1,32 +1,41 @@
-import pygame
 import random
+import pygame
 from .spriteItem import SpriteItem
 
 
 class SpriteStar(SpriteItem):
     """
-    All sprites inherit from pygame.sprite.Sprite.
-    A basic item
+    A star that grants Peach immunity and the ability to kill enemies temporarily.
+    Keeps track of the time and removes itself after a while.
     :param
         - y_pos: starting y position
         - x_pos: starting x position
+        - player: reference to the player
+        - blockgroup: reference to the respective sprite group
     """
 
     def __init__(self, y_pos, x_pos, player, blockgroup):
         SpriteItem.__init__(self, y_pos, x_pos, player)
 
-        self.velocityY = 0
-        self.gravity = 0.5
-
-        self.direction = +1
+        # References
         self.blockGroup = blockgroup
 
+        self.velocityY = 0
+        self.gravity = 0.5
+        self.direction = +1
+
+        # Current time + time when next jump occurs varies
         self.counter = 20
         self.nextJump = random.randint(30, 80)
 
+        # When activated, movement starts, prevents moving from the very start when still in container
         self.activated = False
 
     def update(self):
+        """
+        What items do on their own, independent of player inputs.
+        Checks collisions with the player and "walks", "jumps" as long as it did not get collected.
+        """
         if pygame.sprite.collide_rect(self, self.player):
             top_state = self.player.peekState()
             top_state.handleItemCollision("star")
@@ -49,21 +58,20 @@ class SpriteStar(SpriteItem):
         self.activated = True
 
     def enforceNoVerticalClipping(self):
+        """
+        Check if there occured any vertical collisions while applying gravity.
+        Unlike Mushroom and Goombas, the Star needs to also check for top collisions, since it can jump.
+        """
         col_list = pygame.sprite.spritecollide(self, self.blockGroup, False)
-        if len(col_list) == 0:
-            return  # No clipping, wonderful, we can stop here
-        else:
+        if len(col_list) != 0:
             for collided in col_list:
-
                 x_col = not (self.rect.right < collided.rect.left or self.rect.left > collided.rect.right)
                 y_col = not (self.rect.bottom < collided.rect.top or self.rect.top > collided.rect.bottom)
                 if x_col and y_col:
-
                     # collision on top
                     if self.rect.top <= collided.rect.bottom and self.rect.top >= collided.rect.top:
                         self.rect.top = collided.rect.bottom  # +1
                         self.velocityY = 0
-
                     # collision at the bottom
                     if self.rect.bottom >= collided.rect.top and self.rect.bottom <= collided.rect.bottom:
                         # Place on top of sprite
@@ -71,21 +79,24 @@ class SpriteStar(SpriteItem):
                         self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
 
     def applyGravity(self):
-        # todo: The exact same as in spritePlayer() --> Code duplication
-        # terminal velocity
+        """
+        Updates Y-velocity according to gravity. The terminal velocity is 6.
+        """
         if self.velocityY + self.gravity > 6:
             self.velocityY = 6
         else:
             self.velocityY += self.gravity
 
     def walking(self):
+        """
+        Walks 2 pixels to the right and checks if collisions occured.
+        Adjusts position accordingly if there were collisions.
+        """
         self.rect.x += self.direction * 2
 
         adjusted_pos = self._checkCollisions()
 
-        if adjusted_pos == 0:
-            return
-        else:
+        if adjusted_pos != 0:
             self.rect.x += adjusted_pos * self.direction
             self.direction = self.direction * (-1)
 
@@ -95,7 +106,6 @@ class SpriteStar(SpriteItem):
         If yes, adjust x-position of everything
         :return: 0: If nothing needs to be changed, -2 if position has to be adjusted by 2 to the left, etc
         """
-        # todo: This is the exact same method that stateGame() has, so code duplication! = bad
         move = 0
         col_list = pygame.sprite.spritecollide(self, self.blockGroup, False)
         if len(col_list) == 0:

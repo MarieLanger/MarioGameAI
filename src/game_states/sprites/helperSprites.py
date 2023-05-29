@@ -3,7 +3,7 @@ import pygame
 
 class GameOverSprite(pygame.sprite.Sprite):
     """
-    Detects it when player falls down a hole
+    Detects when player falls down a hole and communicates game over.
     """
 
     def __init__(self, player, game):
@@ -23,10 +23,8 @@ class GameOverSprite(pygame.sprite.Sprite):
 
 class KillEnvironmentSpritesSprite(pygame.sprite.Sprite):
     """
-    All sprites inherit from this sprite
-    :param
-        - y_pos: starting y position
-        - x_pos: starting x position
+    Kills sprites after they move outside of the screen to the left.
+    Killing off sprites leads to less collision-comparisons.
     """
 
     def __init__(self, env_sprites):

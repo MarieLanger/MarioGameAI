@@ -3,7 +3,7 @@ import pygame
 
 class SpriteBasic(pygame.sprite.Sprite):
     """
-    All sprites inherit from this sprite
+    All sprites inherit from this class.
     :param
         - y_pos: starting y position
         - x_pos: starting x position
@@ -17,7 +17,7 @@ class SpriteBasic(pygame.sprite.Sprite):
 
     def update(self):
         """
-        What sprites do on their own, independent of player inputs
+        What sprites do on their own, independent of player inputs.
         """
         pass
 

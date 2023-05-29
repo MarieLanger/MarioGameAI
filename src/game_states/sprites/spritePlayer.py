@@ -3,64 +3,50 @@ import pygame
 
 class SpritePlayer(pygame.sprite.Sprite):
     """
-    All sprites inherit from pygame.sprite.Sprite.
-    The player
+    The player sprite which can be controlled by the user/AI.
     :param
         - y_pos: starting y position
         - x_pos: starting x position
-        - blockgroup: player has knowledge about the blocks around it
+        - blockgroup: player has knowledge about the blocks around it (reference)
+        - game: player needs to communicate with the game itself (reference)
     """
 
     def __init__(self, y_pos, x_pos, blockgroup, game):
         pygame.sprite.Sprite.__init__(self)
 
+        # References
+        self.blockGroup = blockgroup
         self.game = game
 
+        # Draw the player
         self.image = pygame.Surface((16 * 2, 16 * 2))
         self.image.fill((255, 105, 180))
         self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
         self.rect.topleft = (x_pos, y_pos)
 
-        # mask for pixel perfect collision
-        self.mask = pygame.mask.from_surface(self.image)
-
-
-        # Jumping
+        # Jumping variables
         self.velocityY = 0
-        self.gravity = 0.5 #0.4
+        self.gravity = 0.5
 
         # Enemy interactions
         self.immunity = False
         self.immunityCounter = 0
 
-        # Player states after getting items
+        # Player has a state-stack where all the previous states after getting items are stored. Stack data structure.
         self.states = []
         self.states.append(PlayerStateNormal(self))
 
 
-        # todo: Do I need this?
-        self.blockGroup = blockgroup
-        self.itemsGroup = None
-        self.otherGroup = None
-
-
-
-
-
     def update(self):
         """
-        What sprites do on their own, independent of player inputs
+        What forces get applied to the player, independent of the user inputs.
         """
 
-        # https://gamedev.stackexchange.com/questions/29617/how-to-make-a-character-jump
-
-
-        self.rect.y += self.velocityY #  # Apply horizontal velocity to X position
-        #self.applyGravity()
-        # Adjust y-position, if necessary
+        # Apply horizontal velocity to X position and adjust y-position, if necessary
+        self.rect.y += self.velocityY
         self.enforceNoVerticalClipping()
 
-
+        # If player is currently immune, check for how long anymore
         if self.immunity:
             self.immunityCounter += 1
             if self.immunityCounter == 70:
@@ -68,10 +54,8 @@ class SpritePlayer(pygame.sprite.Sprite):
                 self.immunityCounter = 0
                 self.image.fill((255, 105, 180))
 
+        # States need to be updated too (star removes itself after a while!)
         self.peekState().updateState()
-
-
-
 
     """
     Below: What sprites do after player inputs -----------------------------------------------------------------
@@ -79,7 +63,7 @@ class SpritePlayer(pygame.sprite.Sprite):
 
     def checkCollisions_blocks(self):
         """
-        Checks for collisions between player and all sprites in the block-group
+        Checks for collisions between player and all sprites in the block-group.
         :return A list with collided sprites
         """
         return pygame.sprite.spritecollide(self, self.blockGroup, False)
@@ -89,14 +73,13 @@ class SpritePlayer(pygame.sprite.Sprite):
         Checks if the player touches a block either on top or at the bottom (=if the sprite is 1 pixel away)
         :return: (topCol, bottomCol) --> both booleans
         """
-
         bottomCol = False
         topCol = False
 
         for sprite in self.blockGroup.sprites():
             bottomCol = sprite.rect.collidepoint((self.rect.bottomleft[0], self.rect.bottomleft[1] + 1)) or \
-                     sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
-                     sprite.rect.collidepoint((self.rect.bottomright[0], self.rect.bottomright[1] + 1))
+                        sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
+                        sprite.rect.collidepoint((self.rect.bottomright[0], self.rect.bottomright[1] + 1))
             if bottomCol:
                 break
 
@@ -109,60 +92,43 @@ class SpritePlayer(pygame.sprite.Sprite):
 
         return (topCol, bottomCol)
 
-
     def enforceNoVerticalClipping(self):
         """
         Idea: Gravity gets applied every iteration and the y-position gets updated every iteration.
         Problem here: The player might clip into the ground too much.
         What this method does: Checks if clipping occured and if yes, adjust the y-position so that player
-                                stands on top of the ground.
-        Why it works: The rendering occurs after/at the end of update() So the clipping was never visible
-        :return: No direct return, but updates the self.rect.y position
+                               stands on top of the ground.
+        Why it works: The rendering occurs after/at the end of update(). So the clipping was never visible!
+        :return: Method updates the self.rect.y position
         """
-
-        # todo: potentially inefficient because we check collisions twice?
-        """
-        - Player inputs keys
-        - Collisions were checked
-        - Adjust x position correctly
-        
-        - Yolo it and apply y positions
-        - Check if new position is valid and adjust, if necessary
-        """
-
 
         col_list = self.checkCollisions_blocks()
-        if len(col_list) == 0:
-            return  # No clipping, wonderful, we can stop here
-        else:
+        if len(col_list) != 0:
             for collided in col_list:
-                # Check if the sprites even collide in both x and y, see ipad notes
+                # Check if the sprites even collide in both x and y (see ipad notes)
                 # I need it because there is a loop and I might iterate over multiple sprites
-                # If i already fixed the problem with sprite 1, I don't need to adjust it again for sprite 2
-                #Note: rect.right/left only give you x-positions and bottom/top only y-positions!
+                # If I already fixed the problem with sprite 1, I don't need to adjust it again for sprite 2
                 x_col = not (self.rect.right < collided.rect.left or self.rect.left > collided.rect.right)
                 y_col = not (self.rect.bottom < collided.rect.top or self.rect.top > collided.rect.bottom)
                 if x_col and y_col:
-
                     # collision on top
                     if self.rect.top <= collided.rect.bottom and self.rect.top >= collided.rect.top:
-                        self.rect.top = collided.rect.bottom #+1
+                        self.rect.top = collided.rect.bottom  # +1
                         self.velocityY = 0
-
                     # collision at the bottom
                     if self.rect.bottom >= collided.rect.top and self.rect.bottom <= collided.rect.bottom:
                         # Place on top of sprite
-                        self.rect.bottom = collided.rect.top #- 1
+                        self.rect.bottom = collided.rect.top  # - 1
                         self.velocityY = 0  # set y-velocity to zero so that the sprite stops jumping
 
     def applyGravity(self):
-        # terminal velocity
+        """
+        Updates Y-velocity according to gravity. The terminal velocity is 6.
+        """
         if self.velocityY + self.gravity > 6:
             self.velocityY = 6
         else:
             self.velocityY += self.gravity
-
-
 
     def moveLeft(self, value=5):
         self.rect.x -= value
@@ -173,138 +139,130 @@ class SpritePlayer(pygame.sprite.Sprite):
     def move_x(self, value):
         self.rect.x += value
 
-
     def jumpKeyPressed(self):
-        # If peach is in the air, the velocity is either <0 (=jumping up)
-        # or >0 (=jumping down)
-        # When this is the case, peach shouldnt be able to jump too
+        """
+        Sets the Y-velocity to a value after the key for jumping got pressed.
+        Jumping is only allowed if peach stands still (=has Y-velocity 0 at the moment)
+        """
         if self.velocityY == 0:
-            self.velocityY = -11 #-4
+            self.velocityY = -11
 
     def jumpKeyReleased(self):
+        """
+        The jump height is dependent on how long the key has been pressed.
+        """
         if self.velocityY < -5:
-            self.velocityY = self.velocityY/2 +1
-
-
-
+            self.velocityY = self.velocityY / 2 + 1
 
     def enemyHit(self):
-
-        # Check top state to see how to handle collision
+        """
+        Enemies delegate how to handle a direct collision to the player.
+        The player then delegates this call further to its top state.
+        These either gets hit (=True) or hits back (=False)
+        """
+        # Check top state and delegate call
         top_state = self.peekState()
         player_hit = top_state.handleEnemyCollision()  # here the pop state happens + other states make immune
 
-
         # Player can only get hit when player is not immune
         if not self.immunity:
-            if player_hit:  # false if star, otherwise true
+            if player_hit:
+                # Depending on state, either remove it or game over
                 if len(self.states) == 1:
                     self.game.setLevelOutcome(-1)
                 elif len(self.states) > 1:
                     self.removeState(True)
-
-
-        # If player is immune, player only hits back when star
-
         return player_hit  # True if player got hit, False if player "hits back" via star
 
-
-
-
-
-    def addState(self,state):
+    def addState(self, state):
+        """
+        Adds an item state according to stack data structure.
+        """
         self.states.append(state)
-        # Then you go from small to big
 
     def removeState(self, immunityreset):
-        # If immunityreset is set to false, immunity does not get set when state gets removed
+        """
+        Removes a state according to stack-data structure.
+        :param immunityreset: If set to false, immunity does not get set when state gets removed.
+                              This is sometimes necessary, e.g. to handle the removal of the star-state.
+        """
         self.immunity = immunityreset
 
         self.peekState().removeAppearance()
         if immunityreset:
             self.image.fill((255, 216, 240))
-        #self.states.pop()
-
+        # self.states.pop()
 
     def peekState(self):
+        """
+        Returns the top state according to stack data structure.
+        """
         return self.states[-1]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class PlayerState():
     """
-    Class that holds the different states of Peach:
+    The base class for the states that hold the different states of Peach:
     - Normal tiny
     - Bigger
     - Star
-    - Fireflower
     """
-    def __init__(self):
+
+    def __init__(self, player):
         """
         Each state has:
         - A rect
-        - Alternatively, whenever a new state gets entered, update rect from Player-Class
-        - todo later: A different sprite
+        - A reference to player
         """
-        pass
+        self.player = player
 
     def handleEnemyCollision(self):
         """
-        - Lower state
-        - Kill enemy
-        :return:
+        Either lowers state (return: True) or kills enemy (return: False)
         """
         pass
 
-    def handleItemCollision(self):
+    def handleItemCollision(self, itemtype):
         """
-        If the item is lower or equal to current state, do nothing, otherwise, add state
-        :return:
+        If the item is lower or equal to current state, do nothing, otherwise, add state.
+        """
+        pass
+
+    def changeAppearance(self):
+        """
+        Change the appearance of the player sprite when entering state.
+        """
+        pass
+
+    def removeAppearance(self):
+        """
+        Removing the changed appearance when state got exited.
+        """
+        pass
+
+    def updateState(self):
+        """
+        Some states need to update their internal model. (star)
         """
         pass
 
 
-class PlayerStateNormal():
+class PlayerStateNormal(PlayerState):
     """
     Class that holds the normal state of Peach
     """
+
     def __init__(self, player):
+        PlayerState.__init__(self, player)
 
         # width, height
         self.size = [16 * 2, 16 * 2]
         self.color = (255, 105, 180)
 
-        # reference
-        self.player = player
-
     def handleEnemyCollision(self):
-        # Game over
-        return True
+        return True  # Game over
 
     def handleItemCollision(self, itemtype):
-        """
-        If the item is lower or equal to current state, do nothing, otherwise, add state
-        :return:
-        """
         if itemtype == "mushroom":
             newstate = PlayerStateBig(self.player)
             self.player.addState(newstate)
@@ -314,34 +272,23 @@ class PlayerStateNormal():
             self.player.addState(newstate)
             newstate.changeAppearance()
 
-    def updateState(self):
-        pass
 
 
-
-
-class PlayerStateBig():
+class PlayerStateBig(PlayerState):
     """
-    Class that holds the bigger state of Peach
+    Class that holds the bigger state of Peach. See mushroom item documentation (spriteMushroom.py)
     """
+
     def __init__(self, player):
-
+        PlayerState.__init__(self, player)
         # width, height
         self.size = [16 * 2, 32 * 2]
         self.color = (255, 105, 180)
 
-        # reference
-        self.player = player
-
     def handleEnemyCollision(self):
-        #self.player.removeState()
-        return True  # yes, player got hit
+        return True
 
     def handleItemCollision(self, itemtype):
-        """
-        If the item is lower or equal to current state, do nothing, otherwise, add state
-        :return:
-        """
         if itemtype == "star":
             newstate = PlayerStateStar(self.player)
             self.player.addState(newstate)
@@ -365,57 +312,42 @@ class PlayerStateBig():
         pass
 
 
-
-
-class PlayerStateStar():
+class PlayerStateStar(PlayerState):
     """
     Class that holds the bigger state of Peach
     """
+
     def __init__(self, player):
+        PlayerState.__init__(self, player)
 
         # width, height
         self.size = [16 * 2, 32 * 2]
         self.color = (255, 105, 180)
 
-        # reference
-        self.player = player
-
         # counter
         self.counter = 0
 
     def handleEnemyCollision(self):
-        #self.player.removeState()
-        return False  # no, enemy should get hit instead
+        return False
 
     def handleItemCollision(self, itemtype):
-        """
-        If the item is lower or equal to current state, do nothing, otherwise, add state
-        :return:
-        """
         if itemtype == "mushroom":
-            #self.player.removeState(False)
-            #self.player.addState(PlayerStateBig(self.player))
-
+            # Mushroom should get applied before star
             newstate = PlayerStateBig(self.player)
             self.player.addState(newstate)
             newstate.changeAppearance()
-            
+
             self.player.addState(self)
             self.changeAppearance()
 
     def changeAppearance(self):
-        #self.player.image.fill((180, 105, 255))
-        #self.player.image.fill((167, 80, 255))
-        self.player.image.fill((127,81,246))
+        self.player.image.fill((127, 81, 246))
 
     def removeAppearance(self):
         self.player.image.fill((255, 105, 180))
 
     def updateState(self):
         self.counter += 1
-
         if self.counter > 100:
-            self.player.peekState().removeAppearance()
             self.player.removeState(False)
-
-
+            self.player.states.pop()

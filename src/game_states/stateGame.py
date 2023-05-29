@@ -17,7 +17,6 @@ from .sprites.spritePipe import SpritePipe
 from .sprites.spritePiranha import SpritePiranha
 from .sprites.spritePlayer import SpritePlayer
 from .sprites.spriteStar import SpriteStar
-from .sprites.spriteTest import SpriteTest  # YOU NEED A DOT BEFORE THE FOLDER NAME AAAAAAAAAAAAAAAAAAAAHHHHHHH
 from .state import State
 from .stateGameOver import StateGameOver
 from .stateLevelCompleted import StateLevelCompleted
@@ -25,25 +24,47 @@ from .stateLevelCompleted import StateLevelCompleted
 
 class StateGame(State):
     """
-    State for when the game gets played
+    State for when the game gets played with human inputs.
     """
 
     def __init__(self, game):
-        self.game = game
+        State.__init__(self, game)
 
         data = json.load(open('../data/titleState.json'))
         self.level = data['level']  # a number from 1 to 10
-
-        # Game related variables --------------------------------------------------------------
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
 
+        # Declaring game related variables
+        self.levelMatrix = None
+
+        self.levelMoving = True
+        self.borderCloseness = 0
+
+        self.leftKeyHold = False
+        self.rightKeyHold = False
+        self.upKeyHold = False
+
+        self.levelProgress = 0
+        self.pixelProgress = 0
+
+        self.player = None
+        self.playerSprites = None
+        self.env_sprites = None
+        self.blockSprites = None
+        self.coinSprites = None
+        self.enemySprites = None
+        self.itemSprites = None
+        self.helperSprites = None
+        self.coinCount = 0
+        self.levelOutcome = 0
+
+        # Setting the game related variables with values
         self.initializeLevel()
 
     def initializeLevel(self):
         """
         Initializes level.
-        Putting this into a separate method allows to reset the level after a game over got encountered
-        :return:
+        Putting this into a separate method allows to reset the level after a game over got encountered.
         """
         # Load level ---------------------------------------------------------------------------
         path = "\..\data\levels"
@@ -58,31 +79,15 @@ class StateGame(State):
         self.levelMoving = True
         self.borderCloseness = 0  # When peach goes left, measure how close she is to the border
 
-        # Pygame only detects when keys got pressed or released, but not when they stay held -----
+        # Pygame only detects when keys got pressed or released, but not when they stay held
         # This is a workaround around this
         self.leftKeyHold = False
         self.rightKeyHold = False
         self.upKeyHold = False
 
-        # There can be maximally 13x25 tiles visible at 1 time (25 because 2 half tiles can be seen)
-        # self.currentMatrix = self.levelMatrix[0:13, 0:25]
-
-        # How far the level got reached, in tiles
-        # Initialized by 25: maximally we see the 25th tiles in x-dimension
-        # 24: 0-24 = 25 entries
+        # How far the level got reached, in tiles and pixels
         self.levelProgress = 23
         self.pixelProgress = 23 * 32
-
-        # Create all the sprite objects -------------------------------------------------
-        # Creating the sprite groups
-        self.env_sprites = pygame.sprite.Group()  # contains all sprites except the player
-        self.playerSprites = pygame.sprite.Group()
-        self.player = None
-        self.blockSprites = pygame.sprite.Group()
-        self.coinSprites = pygame.sprite.Group()
-        self.enemySprites = pygame.sprite.Group()
-        self.itemSprites = pygame.sprite.Group()
-        self.helperSprites = pygame.sprite.Group()
 
         # Coins
         self.coinCount = 0
@@ -90,12 +95,20 @@ class StateGame(State):
         # Communicate level completed (+1) or game over (-1)
         self.levelOutcome = 0
 
-        # Actually creating the first sprites at the start of the level + adding them into a group ---------------
+        # Creating the sprite groups
+        self.env_sprites = pygame.sprite.Group()  # contains all sprites except the player
+        self.playerSprites = pygame.sprite.Group()
+        self.blockSprites = pygame.sprite.Group()
+        self.coinSprites = pygame.sprite.Group()
+        self.enemySprites = pygame.sprite.Group()
+        self.itemSprites = pygame.sprite.Group()
+        self.helperSprites = pygame.sprite.Group()
 
-        # Creating the player
+
+        # Creating the sprites and playing them into the groups
         new_sprite = SpritePlayer(11 * 16 * 2, 2 * 16 * 2, self.blockSprites, self)
-        self.playerSprites.add(new_sprite)
         self.player = new_sprite
+        self.playerSprites.add(new_sprite)
 
         # The player sees 13x24 tiles at once
         for col in range(24):
@@ -104,11 +117,9 @@ class StateGame(State):
         self.helperSprites.add(GameOverSprite(self.player, self))
         self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
 
-        self.env_sprites.add(SpriteTest())  # todo: remove this line later
 
     def handleInputs(self):
-        # Note down inputs --------------------------------------------
-        # Necessary to have continued movement
+        # Note down inputs, necessary for continued movement
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -131,33 +142,29 @@ class StateGame(State):
                     self.leftKeyHold = False
                 if event.key == pygame.K_UP:
                     self.upKeyHold = False
-                    # todo: That line destroys every bit of structured code but it makes things also 1000x simpler oof
                     self.player.jumpKeyReleased()
-        # From here: Use noted down inputs to change model!
+        # From here: Use noted down inputs to change model
 
         # HANDLE COLLISIONS WITH BLOCKS -----------------------------------------------------------------------------
 
-        # Left/Right first
+        # Left/Right
         # Idea: Let peach move where she wants and afterwards check if a collision occurred with it
-        # While doing this, I always have to handle borders
+        # While doing this, handle borders
         self._borderHandling(self.leftKeyHold, self.rightKeyHold)
 
-        # You can only jump if you touch the ground, check this here and handle key inputs
+        # Top/Bottom
+        # Jumping is only allowed when touching the ground
         (topCol, bottomCol) = self.player.checkBottomTopTouches()
         if bottomCol:
-            # I can only jump if I am standing on the ground
-            # I am not a space rocket.
             if self.upKeyHold:
                 self.player.jumpKeyPressed()
         else:
-            # Newton says that I have to abide by the law of gravity after I jumped
             self.player.applyGravity()
+
+        # If top got hit, stop jumping
         if topCol:
             self.player.jumpKeyReleased()
-            # If I hit something on top I stop jumping
-            # I am not a quantum particle tunnel through an energy barrier
 
-        # todo: Collisions with end flag -----------------------------------------------
 
         # WHEN INPUT ANALYZING IS FINISHED, UPDATE SPRITES ------------------------------------------------
         # Update all sprites
@@ -180,7 +187,7 @@ class StateGame(State):
     def _loadSpriteColumn(self, column, columnIndex, offset):
         """
         Creates new sprites for 1 new column.
-        NEW: Operates with player position
+        Operates with player position (=offset)
 
         :param column: 1 column with values (=a 13x1 matrix)
         columnID: Index of column in level-matrix
@@ -191,6 +198,7 @@ class StateGame(State):
             if column[row] != 0:
                 # Initialize reference for later
                 new_sprite = None
+
                 # CREAING THE SPRITES
                 if column[row] == 1:  # If block
                     new_sprite = SpriteBlock(row * 16 * 2, columnIndex * 16 * 2 - offset)
@@ -226,12 +234,7 @@ class StateGame(State):
                     new_sprite = SpritePipe(row * 16 * 2, columnIndex * 16 * 2 - offset, height)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
-                    """if column[row] == 2:  # If player
-                    #new_sprite = SpritePlayer(row * 16 * 2, columnIndex * 16 * 2, self.env_sprites)
-                    # Column index (2nd input is fixed for player!
-                    new_sprite = SpritePlayer(row * 16 * 2, 2 * 16 * 2, self.blockSprites)
-                    self.playerSprites.add(new_sprite)
-                    self.player = new_sprite"""
+
                 elif column[row] == 6:  # if coin
                     new_sprite = SpriteCoin(row * 16 * 2, columnIndex * 16 * 2 - offset, self, self.player)
                     self.env_sprites.add(new_sprite)
@@ -265,7 +268,9 @@ class StateGame(State):
                     self.itemSprites.add(new_sprite)
 
     def _evaluateTilePos(self):
-        # If another tile got touched
+        """
+        If another 32x32 tile got touched, load new column
+        """
         if int(self.pixelProgress / 32) > self.levelProgress:
             self.levelProgress += 1
             self._loadSpriteColumn(self.levelMatrix[:, self.levelProgress], 23, self.pixelProgress % 32)
@@ -273,8 +278,8 @@ class StateGame(State):
     def _checkCollisions(self):
         """
         Checks if after walking, peach clipped into something.
-        If yes, adjust x-position of everything
-        :return: 0: If nothing needs to be changed, -2 if position has to be adjusted by 2 to the left, etc
+        If yes, adjust x-position of everything.
+        :return: 0: If nothing needs to be changed, -2 if position has to be adjusted by 2 to the left, etc.
         """
         move = 0
         col_list = self.player.checkCollisions_blocks()
@@ -282,7 +287,6 @@ class StateGame(State):
             return move  # No clipping occured
         else:
             for collided in col_list:
-
                 # Then player collided with right side
                 if self.player.rect.left < collided.rect.left:
                     # If a collision happened
@@ -290,14 +294,12 @@ class StateGame(State):
                         # put to the left of it
                         if abs(collided.rect.left - self.player.rect.right) > abs(move):
                             move = collided.rect.left - self.player.rect.right
-
                 # Else, player collided with left side
                 else:
                     if self.player.rect.left < collided.rect.right:
                         # put to the left of it
                         if abs(collided.rect.right - self.player.rect.left) > abs(move):
                             move = self.player.rect.left - collided.rect.right
-
             # At the end, return the absolute biggest move
             return move
 
@@ -306,9 +308,7 @@ class StateGame(State):
         This method deals with the logic that when peach is near a border, the level should not move anymore.
         Most of the time, peach stays at 1 x-position and the level moves.
         However, when approaching a border, if the level moved too, then the game would show the part where
-        no level exists = bad
-
-        NEW: Updated, levelProgress and sprite loading
+        no level exists (=bad).
         """
         adjusted_pos = 0
 
@@ -328,9 +328,7 @@ class StateGame(State):
                     for sprite in self.env_sprites.sprites():
                         sprite.move_x(-adjusted_pos)
                     self.pixelProgress += adjusted_pos
-
                 self._evaluateTilePos()
-
             if leftinput:
                 # As soon as I go left, the level should not move anymore (=peach now moves)
                 # Hence, peach-moving state gets entered
@@ -348,11 +346,11 @@ class StateGame(State):
         # If peach is at the border, the level needs to stay + peach moves
         else:
             if rightinput:
-                # If right key gets pressed, closeness to border gets smaller
-                # If peach is at original closeness-position, peach now stays and sprites move again
-                # Hence, states switch
-
                 """
+                If right key gets pressed, closeness to border gets smaller
+                If peach is at original closeness-position, peach now stays and sprites move again
+                Hence, states switch
+
                 Further problem here:
                 If clip occured, then borderCloseness could be e.g. 4
                 For this, peach needs to move 4 pixels
@@ -361,7 +359,7 @@ class StateGame(State):
                 =5 pixels movement in total
                 """
 
-                # if big enough, verfahre wie normal
+                # If big enough, verfahre wie normal
                 if self.borderCloseness > 4:
                     self.borderCloseness -= 5
                     if self.borderCloseness == 0:
@@ -371,10 +369,9 @@ class StateGame(State):
                     adjusted_pos = self._checkCollisions()
                     if adjusted_pos != 0:
                         for sprite in self.playerSprites.sprites():
-                            sprite.move_x(adjusted_pos)  # i flipped the sign and it worked?
+                            sprite.move_x(adjusted_pos)
                         self.borderCloseness += -adjusted_pos
                 else:  # else, a clip occured and do the above
-
                     # Move peach 4 pixels to the right
                     for sprite in self.playerSprites.sprites():
                         sprite.moveRight(self.borderCloseness)
@@ -425,21 +422,14 @@ class StateGame(State):
         screen.fill('black')
 
         # Render all sprites
-        # self.env_sprites.draw(screen)
-
         self.enemySprites.draw(screen)  # enemies have to be at least behind the blocks!
-
         self.blockSprites.draw(screen)
         self.coinSprites.draw(screen)
         self.itemSprites.draw(screen)
-
         self.playerSprites.draw(screen)  # player is in front of everything
-
         # self.helperSprites.draw(screen)
 
         # Render coin text
         textSurface = self.smallFont.render("Coins: " + str(self.coinCount), False, (255, 255, 255))
         screen.blit(textSurface, (530, 5))
 
-        # Update everything
-        # pygame.display.update()
