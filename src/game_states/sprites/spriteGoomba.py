@@ -16,8 +16,8 @@ class SpriteGoomba(SpriteEnemy):
         - blockgroup: reference to the respective sprite group
     """
 
-    def __init__(self, y_pos, x_pos, player, blockgroup):
-        SpriteEnemy.__init__(self, y_pos, x_pos, player)
+    def __init__(self, y_pos, x_pos, player, blockgroup, game):
+        SpriteEnemy.__init__(self, y_pos, x_pos, player, game)
 
         # Enemies have color
         self.image.fill((141, 2, 31))
