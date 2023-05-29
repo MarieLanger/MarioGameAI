@@ -16,8 +16,8 @@ class SpriteKoopaShell(SpriteGoomba):
         - blockgroup, enemygroup: references to the respective sprite groups
     """
 
-    def __init__(self, y_pos, x_pos, player, blockgroup, enemygroup):
-        SpriteGoomba.__init__(self, y_pos, x_pos, player, blockgroup)
+    def __init__(self, y_pos, x_pos, player, blockgroup, enemygroup, game):
+        SpriteGoomba.__init__(self, y_pos, x_pos, player, blockgroup, game)
 
         # References
         self.blockGroup = blockgroup

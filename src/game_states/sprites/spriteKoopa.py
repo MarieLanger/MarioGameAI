@@ -15,8 +15,8 @@ class SpriteKoopa(SpriteGoomba):
         - blockgroup, enemygroup, envgroup: References to the respective sprite groups
     """
 
-    def __init__(self, y_pos, x_pos, player, blockgroup, enemygroup, envgroup):
-        SpriteGoomba.__init__(self, y_pos, x_pos, player, blockgroup)
+    def __init__(self, y_pos, x_pos, player, blockgroup, enemygroup, envgroup, game):
+        SpriteGoomba.__init__(self, y_pos, x_pos, player, blockgroup, game)
 
         # References
         self.blockGroup = blockgroup
@@ -66,7 +66,7 @@ class SpriteKoopa(SpriteGoomba):
 
 
     def _createKoopaShell(self):
-        new_sprite = SpriteKoopaShell(self.rect.y + 32, self.rect.x, self.player, self.blockGroup, self.enemyGroup)
+        new_sprite = SpriteKoopaShell(self.rect.y + 32, self.rect.x, self.player, self.blockGroup, self.enemyGroup, self.game)
         self.envGroup.add(new_sprite)
         self.enemyGroup.add(new_sprite)
 

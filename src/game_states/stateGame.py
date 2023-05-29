@@ -32,7 +32,9 @@ class StateGame(State):
 
         data = json.load(open('../data/titleState.json'))
         self.level = data['level']  # a number from 1 to 10
-        self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
+        #self.tinyFont = pygame.font.SysFont('Comic Sans MS', 20)
+        self.tinyFont = pygame.font.SysFont('consolas', 17)
+        print(pygame.font.get_fonts())
 
         # Declaring game related variables
         self.levelMatrix = None
@@ -46,6 +48,9 @@ class StateGame(State):
 
         self.levelProgress = 0
         self.pixelProgress = 0
+        self.enemiesKilled = 0
+        self.startTime = 0
+        self.currentTime = 0
 
         self.player = None
         self.playerSprites = None
@@ -88,6 +93,11 @@ class StateGame(State):
         # How far the level got reached, in tiles and pixels
         self.levelProgress = 23
         self.pixelProgress = 23 * 32
+        self.startTime = pygame.time.get_ticks()
+        self.currentTime = pygame.time.get_ticks()
+
+        # Kill counter for enemies
+        self.enemiesKilled = 0
 
         # Coins
         self.coinCount = 0
@@ -119,6 +129,9 @@ class StateGame(State):
 
 
     def handleInputs(self):
+        # Update time
+        self.currentTime = pygame.time.get_ticks()
+
         # Note down inputs, necessary for continued movement
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -241,16 +254,16 @@ class StateGame(State):
                     self.coinSprites.add(new_sprite)
                 elif column[row] == 7:  # if goomba
                     new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
-                                              self.blockSprites)
+                                              self.blockSprites, self)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
                 elif column[row] == 8:  # if koopa
                     new_sprite = SpriteKoopa(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
-                                             self.blockSprites, self.enemySprites, self.env_sprites)
+                                             self.blockSprites, self.enemySprites, self.env_sprites, self)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
                 elif column[row] == 9:  # if piranha
-                    new_sprite = SpritePiranha(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player)
+                    new_sprite = SpritePiranha(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self)
                     self.env_sprites.add(new_sprite)
                     self.enemySprites.add(new_sprite)
                 elif column[row] == 4:  # if mushroom
@@ -415,6 +428,9 @@ class StateGame(State):
     def increaseCoinCounter(self):
         self.coinCount += 1
 
+    def increaseEnemyKillCounter(self):
+        self.enemiesKilled += 1
+
     def increaseLevel(self):
         self.level += 1
 
@@ -430,6 +446,18 @@ class StateGame(State):
         # self.helperSprites.draw(screen)
 
         # Render coin text
-        textSurface = self.smallFont.render("Coins: " + str(self.coinCount), False, (255, 255, 255))
-        screen.blit(textSurface, (530, 5))
+        #textSurface = self.smallFont.render("Coins: " + str(self.coinCount), False, (255, 255, 255))
+        #screen.blit(textSurface, (530, 5))
 
+        """s = pygame.Surface((700, 64), pygame.SRCALPHA)  # per-pixel alpha
+        s.fill((0, 0, 0, 180))  # notice the alpha value in the color
+        screen.blit(s, (0, 0))"""
+
+        textSurface1 = self.tinyFont.render("Progress: "+ str(self.pixelProgress-736), False, (175, 125, 145))
+        textSurface2 = self.tinyFont.render("Enemy kills: " + str(self.enemiesKilled), False, (170,118,118))
+        textSurface3 = self.tinyFont.render("Coins: " + str(self.coinCount), False, (110, 110, 38))
+        textSurface4 = self.tinyFont.render("Time: " + str(int((self.currentTime - self.startTime)/1000)), False, (110, 110, 110))
+        screen.blit(textSurface1, (10, 455))
+        screen.blit(textSurface2, (250, 455))
+        screen.blit(textSurface3, (250, 429))
+        screen.blit(textSurface4, (540, 455))

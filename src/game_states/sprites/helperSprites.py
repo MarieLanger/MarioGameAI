@@ -39,4 +39,4 @@ class KillEnvironmentSpritesSprite(pygame.sprite.Sprite):
     def update(self):
         col_list = pygame.sprite.spritecollide(self, self.env_sprites, False)
         for sprite in col_list:
-            sprite.kill()
+            sprite.remove(self.env_sprites)
