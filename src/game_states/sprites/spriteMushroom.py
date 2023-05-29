@@ -1,30 +1,40 @@
 import pygame
+
 from .spriteItem import SpriteItem
+
 
 class SpriteMushroom(SpriteItem):
     """
-    All sprites inherit from pygame.sprite.Sprite.
-    A basic item
+    A mushroom that gives Peach "an extra life" and makes her taller.
+    When hit, peach goes back to original state and is immune against enemy attacks temporarily.
     :param
         - y_pos: starting y position
         - x_pos: starting x position
+        - player: reference to the player
+        - blockgroup: reference to the respective sprite group
     """
-    def __init__(self, y_pos, x_pos, player,blockgroup):
+
+    def __init__(self, y_pos, x_pos, player, blockgroup):
         SpriteItem.__init__(self, y_pos, x_pos, player)
+
+        # References (self.player got set in superclass)
+        self.blockGroup = blockgroup
 
         self.velocityY = 0
         self.gravity = 0.5
-
         self.direction = +1
-        self.blockGroup = blockgroup
 
-        self.activated = False  # prevents moving from the very start
-
+        # When activated, movement starts, prevents moving from the very start when still in container
+        self.activated = False
 
     def activate(self):
         self.activated = True
 
     def update(self):
+        """
+        What items do on their own, independent of player inputs.
+        Checks collisions with the player and "walks" similarly to Goombas.
+        """
         if pygame.sprite.collide_rect(self, self.player):
             top_state = self.player.peekState()
             top_state.handleItemCollision("mushroom")
@@ -32,49 +42,43 @@ class SpriteMushroom(SpriteItem):
 
         if self.activated:
             self.walking()
-
             self.rect.y += self.velocityY
             self.applyGravity()
             self.enforceNoVerticalClipping()
 
-
-
-
     def enforceNoVerticalClipping(self):
-        # todo: Same code as in spritePlayer() --> Code duplication!
+        """
+        Check if there occured any vertical collisions while applying gravity.
+        """
         col_list = pygame.sprite.spritecollide(self, self.blockGroup, False)
-        if len(col_list) == 0:
-            return  # No clipping, wonderful, we can stop here
-        else:
+        if len(col_list) != 0:
             for collided in col_list:
                 if not (self.rect.bottom < collided.rect.top or self.rect.top > collided.rect.bottom):
-                    # collision at the bottom
+                    # If there was collision at the bottom, place on top of sprite + set Y-velocity to zero
                     if self.rect.bottom >= collided.rect.top and self.rect.bottom <= collided.rect.bottom:
-                        # Place on top of sprite
-                        self.rect.bottom = collided.rect.top #- 1
-                        self.velocityY = 0  # set y-velocity to zero
-
+                        self.rect.bottom = collided.rect.top
+                        self.velocityY = 0
 
     def applyGravity(self):
-        # todo: The exact same as in spritePlayer() --> Code duplication
-        # terminal velocity
+        """
+        Updates Y-velocity according to gravity. The terminal velocity is 6.
+        """
         if self.velocityY + self.gravity > 6:
             self.velocityY = 6
         else:
             self.velocityY += self.gravity
 
-
     def walking(self):
-        self.rect.x += self.direction*2
+        """
+        Walks 2 pixels to the right and checks if collisions occured.
+        Adjusts position accordingly if there were collisions.
+        """
+        self.rect.x += self.direction * 2
 
         adjusted_pos = self._checkCollisions()
-
-        if adjusted_pos == 0:
-            return
-        else:
-            self.rect.x += adjusted_pos*self.direction
-            self.direction = self.direction*(-1)
-
+        if adjusted_pos != 0:
+            self.rect.x += adjusted_pos * self.direction
+            self.direction = self.direction * (-1)
 
     def _checkCollisions(self):
         """
@@ -82,11 +86,10 @@ class SpriteMushroom(SpriteItem):
         If yes, adjust x-position of everything
         :return: 0: If nothing needs to be changed, -2 if position has to be adjusted by 2 to the left, etc
         """
-        # todo: This is the exact same method that stateGame() has, so code duplication! = bad
         move = 0
         col_list = pygame.sprite.spritecollide(self, self.blockGroup, False)
         if len(col_list) == 0:
-            return move # No clipping occured
+            return move  # No clipping occured
         else:
             for collided in col_list:
 
