@@ -125,10 +125,11 @@ class SpritePlayer(pygame.sprite.Sprite):
         """
         Updates Y-velocity according to gravity. The terminal velocity is 6.
         """
-        if self.velocityY + self.gravity > 6:
+        self.velocityY = min(6, self.velocityY + self.gravity)
+        """if self.velocityY + self.gravity > 6:
             self.velocityY = 6
         else:
-            self.velocityY += self.gravity
+            self.velocityY += self.gravity"""
 
     def moveLeft(self, value=5):
         self.rect.x -= value
@@ -264,7 +265,7 @@ class PlayerStateNormal(PlayerState):
 
     def handleItemCollision(self, itemtype):
         if itemtype == "mushroom":
-            newstate = PlayerStateBig(self.player)
+            newstate = PlayerStateMushroom(self.player)
             self.player.addState(newstate)
             newstate.changeAppearance()
         elif itemtype == "star":
@@ -274,7 +275,7 @@ class PlayerStateNormal(PlayerState):
 
 
 
-class PlayerStateBig(PlayerState):
+class PlayerStateMushroom(PlayerState):
     """
     Class that holds the bigger state of Peach. See mushroom item documentation (spriteMushroom.py)
     """
@@ -333,7 +334,7 @@ class PlayerStateStar(PlayerState):
     def handleItemCollision(self, itemtype):
         if itemtype == "mushroom":
             # Mushroom should get applied before star
-            newstate = PlayerStateBig(self.player)
+            newstate = PlayerStateMushroom(self.player)
             self.player.addState(newstate)
             newstate.changeAppearance()
 

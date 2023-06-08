@@ -56,10 +56,10 @@ class StateGame(State):
         self.playerSprites = None
         self.env_sprites = None
         self.blockSprites = None
-        self.coinSprites = None
         self.enemySprites = None
         self.itemSprites = None
         self.helperSprites = None
+        self.endFlagSprites = None
         self.coinCount = 0
         self.levelOutcome = 0
 
@@ -109,10 +109,10 @@ class StateGame(State):
         self.env_sprites = pygame.sprite.Group()  # contains all sprites except the player
         self.playerSprites = pygame.sprite.Group()
         self.blockSprites = pygame.sprite.Group()
-        self.coinSprites = pygame.sprite.Group()
         self.enemySprites = pygame.sprite.Group()
         self.itemSprites = pygame.sprite.Group()
         self.helperSprites = pygame.sprite.Group()
+        self.endFlagSprites = pygame.sprite.Group()
 
 
         # Creating the sprites and playing them into the groups
@@ -251,7 +251,7 @@ class StateGame(State):
                 elif column[row] == 6:  # if coin
                     new_sprite = SpriteCoin(row * 16 * 2, columnIndex * 16 * 2 - offset, self, self.player)
                     self.env_sprites.add(new_sprite)
-                    self.coinSprites.add(new_sprite)
+                    self.itemSprites.add(new_sprite)
                 elif column[row] == 7:  # if goomba
                     new_sprite = SpriteGoomba(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
                                               self.blockSprites, self)
@@ -278,7 +278,8 @@ class StateGame(State):
                 elif column[row] == 10:
                     new_sprite = SpriteEndflag(row * 16 * 2, columnIndex * 16 * 2 - offset, self, self.player)
                     self.env_sprites.add(new_sprite)
-                    self.itemSprites.add(new_sprite)
+                    self.endFlagSprites.add(new_sprite)
+                    #self.itemSprites.add(new_sprite)
 
     def _evaluateTilePos(self):
         """
@@ -438,9 +439,9 @@ class StateGame(State):
         screen.fill('black')
 
         # Render all sprites
+        self.endFlagSprites.draw(screen)
         self.enemySprites.draw(screen)  # enemies have to be at least behind the blocks!
         self.blockSprites.draw(screen)
-        self.coinSprites.draw(screen)
         self.itemSprites.draw(screen)
         self.playerSprites.draw(screen)  # player is in front of everything
         # self.helperSprites.draw(screen)

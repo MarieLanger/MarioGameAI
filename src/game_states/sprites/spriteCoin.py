@@ -1,9 +1,8 @@
 import pygame
 
-from .spriteBasic import SpriteBasic
+from .spriteItem import SpriteItem
 
-
-class SpriteCoin(SpriteBasic):
+class SpriteCoin(SpriteItem):
     """
     A coin which can be collected.
     :param
@@ -14,7 +13,7 @@ class SpriteCoin(SpriteBasic):
     """
 
     def __init__(self, y_pos, x_pos, game, player):
-        SpriteBasic.__init__(self, y_pos, x_pos)
+        SpriteItem.__init__(self, y_pos, x_pos, player)
 
         # Coin is a circle and has a color
         self.image = pygame.Surface((28, 28), pygame.SRCALPHA)
@@ -23,7 +22,6 @@ class SpriteCoin(SpriteBasic):
 
         # References
         self.game = game
-        self.player = player
 
     def update(self):
         """
