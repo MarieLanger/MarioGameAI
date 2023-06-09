@@ -260,7 +260,7 @@ class StateGame(State):
                                                  self.blockSprites, self.enemySprites, self.env_sprites, content_sprite)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
-                elif column[row] == 5:  # if container with star
+                elif column[row] == 5:  # if container with star 
                     content_sprite = SpriteStar(-50, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
                     self.env_sprites.add(content_sprite)
                     self.itemSprites.add(content_sprite)
