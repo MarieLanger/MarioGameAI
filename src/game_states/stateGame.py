@@ -105,6 +105,9 @@ class StateGame(State):
         # Communicate level completed (+1) or game over (-1)
         self.levelOutcome = 0
 
+        # Kill player if no progress has been made for 10 seconds
+        self.levelProgress10secondsAgo = [self.currentTime/1000,self.levelProgress]
+
         # Creating the sprite groups
         self.env_sprites = pygame.sprite.Group()  # contains all sprites except the player
         self.playerSprites = pygame.sprite.Group()
@@ -140,7 +143,7 @@ class StateGame(State):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.game.exitCurrentState()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
+                if event.key == pygame.K_x:
                     self.game.exitCurrentState()
                 if event.key == pygame.K_RIGHT:
                     self.rightKeyHold = True
@@ -185,12 +188,20 @@ class StateGame(State):
         self.playerSprites.update()
         self.helperSprites.update()
 
+
+        # Induce game over when no progress has been made
+        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+5:
+            if self.levelProgress10secondsAgo[1] == self.levelProgress:
+                self.levelOutcome = -1
+            else:
+                self.levelProgress10secondsAgo = [self.currentTime/1000,self.levelProgress]
+
+
         # If game over
         if self.levelOutcome == -1:
             return StateGameOver(self.game, self)
-
         # If level completed
-        if self.levelOutcome == +1:
+        elif self.levelOutcome == +1:
             return StateLevelCompleted(self.game, self)
 
     def setLevelOutcome(self, value):
@@ -260,7 +271,7 @@ class StateGame(State):
                                                  self.blockSprites, self.enemySprites, self.env_sprites, content_sprite)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
-                elif column[row] == 5:  # if container with star 
+                elif column[row] == 5:  # if container with star
                     content_sprite = SpriteStar(-50, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
                     self.env_sprites.add(content_sprite)
                     self.itemSprites.add(content_sprite)
