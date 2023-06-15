@@ -18,7 +18,7 @@ class StateGameOver(State):
         self.mediumFont = pygame.font.SysFont('Comic Sans MS', 25)
         self.bigFont = pygame.font.SysFont('Comic Sans MS', 45)
 
-    def handleInputs(self):
+    def update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()

@@ -17,7 +17,7 @@ class SpriteContainer(SpriteBlock):
         - content: A reference to the item/coin that's inside the container
     """
 
-    def __init__(self, y_pos, x_pos, player, blockgroup, enemygroup, envgroup, content):
+    def __init__(self, y_pos, x_pos, player, blockgroup, enemygroup, envgroup, content, contentID):
         SpriteBlock.__init__(self, y_pos, x_pos)
 
         # References
@@ -27,6 +27,7 @@ class SpriteContainer(SpriteBlock):
         self.envGroup = envgroup
 
         self.content = content
+        self.contentID = contentID
 
         # Block-color
         self.image.fill((63, 234, 255))
@@ -68,6 +69,22 @@ class SpriteContainer(SpriteBlock):
         else:
             self.content.rect.bottomleft = self.rect.topleft
             self.content.activate()
+
+    def writeState(self, matrix, playerX, playerY):
+        """
+        Writing its own position into the state.
+        :param matrix:
+        :param playerX:
+        :param playerY:
+        :return:
+        """
+        if self._withinStateMatrix(playerX, playerY, self.rect.x, self.rect.y):
+            # Normalize positions
+            newx = self.rect.x - (playerX - 2*32)
+            newy = self.rect.y - (playerY - 6*32)
+
+            # Save state in first matrix
+            matrix[newy // 32, newx // 32, 1] = self.contentID
 
     """Adding functionality to the movement methods because colliderect also needs to be updated"""
     def moveLeft(self, value=5):

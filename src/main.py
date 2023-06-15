@@ -40,7 +40,7 @@ class Game:
             topState = self.stateMachine.peek()
 
             # Handle events and update underlying model accordingly
-            newState = topState.handleInputs()
+            newState = topState.update()
 
             # HandleInputs returns something when a new state has to be entered
             if newState is not None:

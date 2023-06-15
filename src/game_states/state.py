@@ -12,7 +12,7 @@ class State():
         """
         self.game = game
 
-    def handleInputs(self):
+    def update(self):
         """
         Handle user inputs and update the model accordingly.
         :return: If the inputs induced a state change, return the new state. Otherwise, return None.

@@ -7,6 +7,8 @@ from .state import State
 from .stateGame import StateGame
 
 
+
+
 class StateTitle(State):
     """
     The title state for when the game gets started.
@@ -51,7 +53,7 @@ class StateTitle(State):
         self.mediumFont = pygame.font.SysFont('Comic Sans MS', 30)
         self.bigFont = pygame.font.SysFont('Comic Sans MS', 45)
 
-    def handleInputs(self):
+    def update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -104,7 +106,14 @@ class StateTitle(State):
                         self.menuSelection = (self.menuSelection + 1) % 3
                     if event.key == pygame.K_SPACE:
                         if self.menuSelection == 0:
-                            return StateGame(self.game)
+                            return StateGame(self.game, "Human", "Play")
+                        elif self.menuSelection == 1:
+                            if self.aiType_selected == 0:
+                                return StateGame(self.game, "AI", "Train")
+                            elif self.aiType_selected == 1:
+                                return StateGame(self.game, "AI", "Play")
+
+
 
                 # Finally, save everything in a json file
                 self._saveTitleState()
