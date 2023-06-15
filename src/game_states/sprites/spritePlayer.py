@@ -200,6 +200,11 @@ class SpritePlayer(pygame.sprite.Sprite):
         """
         return self.states[-1]
 
+    def getAllStates(self):
+        return self.states
+
+
+
 
 class PlayerState():
     """
@@ -216,6 +221,8 @@ class PlayerState():
         - A reference to player
         """
         self.player = player
+
+        self.stateID = -1
 
     def handleEnemyCollision(self):
         """
@@ -247,6 +254,9 @@ class PlayerState():
         """
         pass
 
+    def getID(self):
+        return self.stateID
+
 
 class PlayerStateNormal(PlayerState):
     """
@@ -259,6 +269,8 @@ class PlayerStateNormal(PlayerState):
         # width, height
         self.size = [16 * 2, 16 * 2]
         self.color = (255, 105, 180)
+
+        self.stateID = 0
 
     def handleEnemyCollision(self):
         return True  # Game over
@@ -285,6 +297,8 @@ class PlayerStateMushroom(PlayerState):
         # width, height
         self.size = [16 * 2, 32 * 2]
         self.color = (255, 105, 180)
+
+        self.stateID = 1
 
     def handleEnemyCollision(self):
         return True
@@ -328,6 +342,8 @@ class PlayerStateStar(PlayerState):
         # counter
         self.counter = 0
 
+        self.stateID = 2
+
     def handleEnemyCollision(self):
         return False
 
@@ -352,3 +368,5 @@ class PlayerStateStar(PlayerState):
         if self.counter > 100:
             self.player.removeState(False)
             self.player.states.pop()
+
+

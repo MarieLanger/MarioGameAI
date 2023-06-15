@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 
 import numpy as np
 import pygame
@@ -21,30 +20,44 @@ from .state import State
 from .stateGameOver import StateGameOver
 from .stateLevelCompleted import StateLevelCompleted
 
+from .handlers.inputHandlerHuman import InputHandlerHuman
+from .handlers.inputHandlerAI import InputHandlerAI
+
 
 class StateGame(State):
     """
     State for when the game gets played with human inputs.
     """
 
-    def __init__(self, game):
+    def __init__(self, game, inputHandler, levelOutcomeHandler):
         State.__init__(self, game)
 
         data = json.load(open('../data/titleState.json'))
         self.level = data['level']  # a number from 1 to 10
         #self.tinyFont = pygame.font.SysFont('Comic Sans MS', 20)
         self.tinyFont = pygame.font.SysFont('consolas', 17)
-        print(pygame.font.get_fonts())
 
-        # Declaring game related variables
+        self.inputHandler = None
+        if inputHandler == "Human":
+            self.inputHandler = InputHandlerHuman(self)
+        elif inputHandler == "AI":
+            self.inputHandler = InputHandlerAI(self)
+
+        self.levelOutcomeHandler = None
+        # todo: set this with levelOutcomeHandler-parameter
+
+
+        # Declaring game related variables -----------------------------------------------
         self.levelMatrix = None
 
         self.levelMoving = True
         self.borderCloseness = 0
 
+        # Note down inputs, necessary for continued movement
         self.leftKeyHold = False
         self.rightKeyHold = False
         self.upKeyHold = False
+        self.previousUpInput = self.upKeyHold
 
         self.levelProgress = 0
         self.pixelProgress = 0
@@ -89,6 +102,7 @@ class StateGame(State):
         self.leftKeyHold = False
         self.rightKeyHold = False
         self.upKeyHold = False
+        self.previousUpInput = self.upKeyHold
 
         # How far the level got reached, in tiles and pixels
         self.levelProgress = 23
@@ -131,36 +145,22 @@ class StateGame(State):
         self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
 
 
-    def handleInputs(self):
+    def update (self):
         # Update time
         self.currentTime = pygame.time.get_ticks()
 
-        # Note down inputs, necessary for continued movement
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.game.exitCurrentState()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_x:
-                    self.game.exitCurrentState()
-                if event.key == pygame.K_RIGHT:
-                    self.rightKeyHold = True
-                if event.key == pygame.K_LEFT:
-                    self.leftKeyHold = True
-                if event.key == pygame.K_UP:
-                    self.upKeyHold = True
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_RIGHT:
-                    self.rightKeyHold = False
-                if event.key == pygame.K_LEFT:
-                    self.leftKeyHold = False
-                if event.key == pygame.K_UP:
-                    self.upKeyHold = False
-                    self.player.jumpKeyReleased()
-        # From here: Use noted down inputs to change model
+        # Get the inputs from the handler
+        self.inputHandler.handleInputs()
 
+
+        # If up-key got released, then register end of jump
+        # If-statement checks if up-key got released, that way jumpKeyReleased() is not called in the input-handler!
+        if self.previousUpInput and not self.upKeyHold:
+            self.player.jumpKeyReleased()
+        self.previousUpInput = self.upKeyHold
+
+
+        # From here: Use noted down inputs to change model
         # HANDLE COLLISIONS WITH BLOCKS -----------------------------------------------------------------------------
 
         # Left/Right
@@ -254,7 +254,7 @@ class StateGame(State):
                     self.itemSprites.add(content_sprite)"""
 
                     new_sprite = SpriteContainer(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
-                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite)
+                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite, -1)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
 
@@ -268,7 +268,7 @@ class StateGame(State):
                     self.itemSprites.add(content_sprite)
 
                     new_sprite = SpriteContainer(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
-                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite)
+                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite, +1)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
                 elif column[row] == 5:  # if container with star
@@ -277,7 +277,7 @@ class StateGame(State):
                     self.itemSprites.add(content_sprite)
 
                     new_sprite = SpriteContainer(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player,
-                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite)
+                                                 self.blockSprites, self.enemySprites, self.env_sprites, content_sprite, +1)
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
                     """new_sprite = SpriteStar(row * 16 * 2, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
@@ -459,6 +459,25 @@ class StateGame(State):
 
     def increaseLevel(self):
         self.level += 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def display(self, screen):
         screen.fill('black')
