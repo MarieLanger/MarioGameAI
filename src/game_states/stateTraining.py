@@ -1,31 +1,24 @@
-import pygame
-import sys
+from .state import State
+from .stateGame import StateGame
+
 import os
-import numpy as np
 import neat
 import pickle
+import pygame
 import time
 
-from .inputHandler import InputHandler
 
-class InputHandlerAI(InputHandler):
-    def __init__(self, game):
-        """
-        A class that handles the AI inputs during gameplay.
-        :param state:
-        """
-        InputHandler.__init__(self, game)
-
-        self.gameState = np.zeros((8, 10))
-        self.itemState = np.zeros(3)  # normal, big, star
-
+class StateTraining(State):
+    def __init__(self, program):
+        State.__init__(self, program)
+        self.levelSimulator = StateGame(self.game, "AI", "Train")
 
         # load elements from config file
         local_dir = os.path.dirname(__file__)
         config_path = os.path.join(local_dir, '../../../data/ai/config.txt')
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                             neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                             config_path)
+                                  neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                  config_path)
 
         # Initialize population
         #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-85')
@@ -62,7 +55,7 @@ class InputHandlerAI(InputHandler):
 
 
     def evaluateGenomes(self, genomes, config):
-        # Enumerate all genomes
+        # Enumerate all genomes and train each one separately
         for i, (genome_id1, genome1) in enumerate(genomes):
             force_quit = self.trainAI(genome1, config)
             if force_quit:
@@ -94,13 +87,13 @@ class InputHandlerAI(InputHandler):
                     return True
 
             # run the game loop and generate infos about the game
-            game_info = self.game.loop()
+            game_info = self.levelSimulator.update()
 
             # Moving the paddles and calculating the fitness?
-            self.move_ai_paddles(net1)
+            # todo
+            #self.move_ai_paddles(net1)
 
-            # Draw game
-            pygame.display.update()
+
 
             # calculate fitness with the hits and the time taken
             duration = time.time() - start_time
@@ -111,64 +104,12 @@ class InputHandlerAI(InputHandler):
         return False
 
 
-    def handleInputs(self, genome):
-        # Check pygame inputs and close window if necessary
-        self._getUserInputs()
+    def update(self):
 
-        # Get game states
-        self._getGameState()
-        self._getItemState()
-
-        # Generate net, Feed states to model and calculate output
-        # todo: Put net generation somewhere else
-        net = neat.nn.FeedForwardNetwork.create(genome, self.config)
-        output = net.activate((self.gameState, self.itemState))
-        decision = output.index(max(output))
-
-        self.game.leftKeyHold = False
-        self.game.rightKeyHold = False
-        self.game.upKeyHold = False
-
-        if decision == 0:
-            self.game.leftKeyHold = True
-        elif decision == 1:
-            self.game.upKeyHold = True
-        elif decision == 2:
-            self.game.rightKeyHold = True
+        self.levelSimulator.update()
 
 
 
 
-
-    def _getItemState(self):
-        states = self.game.player.getAllStates()
-        for state in states:
-            self.itemState[state.getID()] = 1
-
-    def _getGameState(self):
-        # MATRIX:
-        # 2 tiles behind player, 7 tiles in front of player --> x:10
-        # 2 tiles under player, 5 tiles above player --> y: 8
-
-        playerX = self.game.player.rect.x
-        playerY = self.game.player.rect.bottom
-
-        # Reset matrix
-        self.gameState = np.zeros((8,10,2))
-
-        # Idea: Delegate to sprites. Then sprites can decide whether or not they write or what they write
-        for sprite in self.game.env_sprites.sprites():
-            sprite.writeState(self.gameState, playerX, playerY)
-
-        print(self.gameState[:,:,1])
-
-    def _getUserInputs(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.game.game.exitCurrentState()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_x:
-                    self.game.game.exitCurrentState()
+    def display(self):
+        self.levelSimulator.display()
