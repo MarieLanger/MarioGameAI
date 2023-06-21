@@ -51,3 +51,23 @@ class SpritePiranha(SpriteEnemy):
             self.time = 0
 
         self.time += 1
+
+
+    def writeState(self, matrix, playerX, playerY):
+        """
+        Writing its own position into the state.
+        :param matrix:
+        :param playerX:
+        :param playerY:
+        :return:
+        """
+        height = 2
+
+        for tile in range(height):
+            if self._withinStateMatrix(playerX, playerY, self.rect.x, self.rect.y + 32*tile):
+                # Normalize positions
+                newx = self.rect.x - (playerX - 2*32)
+                newy = self.rect.y + 32*tile - (playerY - 6*32)
+
+                # Save state in first matrix
+                matrix[newy // 32, newx // 32, 0] = -1

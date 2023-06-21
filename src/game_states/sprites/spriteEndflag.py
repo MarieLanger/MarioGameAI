@@ -17,7 +17,7 @@ class SpriteEndflag(SpriteBasic):
         SpriteBasic.__init__(self, y_pos, x_pos)
 
         # Shape and color of flag
-        self.image = pygame.Surface((8, 16 * 2 * 4))
+        self.image = pygame.Surface((8, 16 * 2 * 6))
         self.image.fill((63, 234, 255))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x_pos, y_pos)
@@ -43,7 +43,7 @@ class SpriteEndflag(SpriteBasic):
         :param playerY:
         :return:
         """
-        height = 4
+        height = 6
 
         for tile in range(height):
             if self._withinStateMatrix(playerX, playerY, self.rect.x, self.rect.y + 32*tile):
