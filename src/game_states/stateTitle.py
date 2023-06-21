@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 
 import pygame
 
@@ -33,7 +34,14 @@ class StateTitle(State):
         self.level_choices = ("all", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.aiType_choices = ("Train AI", "Test AI")
         self.selection_choices = ("speedrun", "speedrun + coins", "speedrun + coins + enemies")
-        self.aiSelection_choices = ("AI1", "AI2", "AI3")  # todo: add new ones here later
+        self.aiSelection_choices = ["AI1"]  # todo: add new ones here later
+
+        # todo: get all pickle files from "../data/ai/genomes/"
+        print(os.listdir("../data/ai/genomes/"))
+        for file in os.listdir("../data/ai/genomes/"):
+            if file.endswith(".pickle"):
+                self.aiSelection_choices.append(str(file[0:-7]))
+
 
         self.subSelecting = False  # Does user select the sub-options atm or not? (False=not)
         self.subSelection_selected = 0
@@ -46,6 +54,9 @@ class StateTitle(State):
         self.aiType_selected = data['aiType_selected']
         self.selection_selected = data['selection_selected']
         self.aiSelection_selected = data['aiSelection_selected']
+
+        if self.aiSelection_selected >= len(self.aiSelection_choices):
+            self.aiSelection_selected = 0
 
         # Initialize fonts
         pygame.font.init()
@@ -109,7 +120,7 @@ class StateTitle(State):
                             return StateGame(self.game, "Human", "Play")
                         elif self.menuSelection == 1:
                             if self.aiType_selected == 0:
-                                return StateGame(self.game, "AI", "Train")
+                                return StateGame(self.game, "AI", "Train", self.selection_selected+1)
                             elif self.aiType_selected == 1:
                                 return StateGame(self.game, "AI", "Play")
 

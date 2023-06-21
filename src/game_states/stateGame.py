@@ -22,14 +22,15 @@ from .stateLevelCompleted import StateLevelCompleted
 
 from .handlers.inputHandlerHuman import InputHandlerHuman
 from .handlers.inputHandlerAI import InputHandlerAI
-
+from .handlers.standardPlayHandler import StandardPlayHandler
+from .handlers.aiTrainHandler import AITrainHandler
 
 class StateGame(State):
     """
     State for when the game gets played with human inputs.
     """
 
-    def __init__(self, game, inputHandler, levelOutcomeHandler):
+    def __init__(self, game, inputHandler, levelEndHandler, fitnessfunction=0):
         State.__init__(self, game)
 
         data = json.load(open('../data/titleState.json'))
@@ -43,8 +44,12 @@ class StateGame(State):
         elif inputHandler == "AI":
             self.inputHandler = InputHandlerAI(self)
 
-        self.levelOutcomeHandler = None
+        self.levelEndHandler = None
         # todo: set this with levelOutcomeHandler-parameter
+        if levelEndHandler == "Play":
+            self.levelEndHandler = StandardPlayHandler(self)
+        elif levelEndHandler == "Train":
+            self.levelEndHandler = AITrainHandler(self, self.inputHandler, fitnessfunction)
 
 
         # Declaring game related variables -----------------------------------------------
@@ -89,7 +94,7 @@ class StateGame(State):
         filename = "\level" + str(self.level) + ".txt"
         fullpath = os.getcwd() + path + filename
         self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
-        print("the shape of the level is:", self.levelMatrix.shape)
+        #print("the shape of the level is:", self.levelMatrix.shape)
 
         # Necessary for movement at borders.
         # When Peach is close to a border or goes back, Peach moves and the sprites stay still.
@@ -206,7 +211,7 @@ class StateGame(State):
         self.helperSprites.update()
 
         # Induce game over when no progress has been made
-        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+55:
+        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+3:
             if self.levelProgress10secondsAgo[1] == self.levelProgress:
                 self.levelOutcome = -1
             else:
@@ -214,14 +219,12 @@ class StateGame(State):
 
 
 
+        # If level ends, then let handler handle it
+        if self.levelOutcome == -1 or self.levelOutcome == +1:
+            outcome = self.levelEndHandler.handleLevelEnd(self.levelOutcome, self.pixelProgress-736, int((self.currentTime - self.startTime)/1000), self.coinCount, self.enemiesKilled)
+            return outcome
 
-        # If game over
-        # todo: objectifier??
-        if self.levelOutcome == -1:
-            return StateGameOver(self.game, self)
-        # If level completed
-        elif self.levelOutcome == +1:
-            return StateLevelCompleted(self.game, self)
+
 
 
 
