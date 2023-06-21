@@ -16,8 +16,12 @@ class SpritePiranha(SpriteEnemy):
     def __init__(self, y_pos, x_pos, player, game):
         SpriteEnemy.__init__(self, y_pos, x_pos, player, game)
 
-        # Enemies have color
+        # Piranha flower is 2 tiles high
+        self.image = pygame.Surface((16 * 2, 32 * 2))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x_pos+16, y_pos)
         self.image.fill((141, 2, 31))
+
 
         self.time = 0
 
@@ -37,11 +41,11 @@ class SpritePiranha(SpriteEnemy):
         # Depending on time passed, do adjust position
         if self.time < 50:
             pass  # stay up [0:49]
-        elif self.time < 83:
+        elif self.time < 50+32*2+1+1: #83:
             self.rect.y += 1  # go down [50:82]
-        elif self.time < 133:
+        elif self.time < 50+32*2+1+50+1+1: #133:
             pass  # stay down [83:132]
-        elif self.time < 166:
+        elif self.time < 50+32*2+1+50+1+32*2+1+1:#166:
             self.rect.y -= 1  # go up [133:166]
         else:  # when time=1000
             self.time = 0

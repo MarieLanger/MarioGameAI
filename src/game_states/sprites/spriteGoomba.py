@@ -47,7 +47,9 @@ class SpriteGoomba(SpriteEnemy):
             if self.playerPrevRect.bottom <= self.rect.top:
                 self.player.velocityY = -11
                 self.player.jumpKeyReleased()
+                # --------
                 self.kill()
+
             else:
                 # If player came from side, communicate that player got hit
                 player_hit = self.player.enemyHit()
