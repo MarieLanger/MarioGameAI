@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pygame
 
-from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite
+from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite, ButtonSprite
 from .sprites.spriteBlock import SpriteBlock
 from .sprites.spriteCoin import SpriteCoin
 from .sprites.spriteContainer import SpriteContainer
@@ -17,8 +17,6 @@ from .sprites.spritePiranha import SpritePiranha
 from .sprites.spritePlayer import SpritePlayer
 from .sprites.spriteStar import SpriteStar
 from .state import State
-from .stateGameOver import StateGameOver
-from .stateLevelCompleted import StateLevelCompleted
 
 from .handlers.inputHandlerHuman import InputHandlerHuman
 from .handlers.inputHandlerAI import InputHandlerAI
@@ -80,6 +78,7 @@ class StateGame(State):
         self.endFlagSprites = None
         self.coinCount = 0
         self.levelOutcome = 0
+        self.buttonSprites = []
 
         # Setting the game related variables with values
         self.initializeLevel()
@@ -149,6 +148,18 @@ class StateGame(State):
         self.helperSprites.add(GameOverSprite(self.player, self))
         self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
 
+        x = 500
+        y = 470
+        self.buttonSprites.append(ButtonSprite(x,y))
+        self.buttonSprites.append(ButtonSprite(x+40,y-20))
+        self.buttonSprites.append(ButtonSprite(x+40*2,y))
+        self.buttonSprites.append(ButtonSprite(x+40,y))
+
+        self.helperSprites.add(self.buttonSprites[0])
+        self.helperSprites.add(self.buttonSprites[1])
+        self.helperSprites.add(self.buttonSprites[2])
+        self.helperSprites.add(self.buttonSprites[3])
+
 
     def update (self):
         # Update time
@@ -209,6 +220,12 @@ class StateGame(State):
         self.env_sprites.update()  # during update, setLevelOutcome may or may not be called
         self.playerSprites.update()
         self.helperSprites.update()
+
+        self.buttonSprites[0].checkInputs(self.leftKeyHold)
+        self.buttonSprites[1].checkInputs(self.upKeyHold)
+        self.buttonSprites[2].checkInputs(self.rightKeyHold)
+
+
 
         # Induce game over when no progress has been made
         if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+10:
@@ -530,4 +547,4 @@ class StateGame(State):
         screen.blit(textSurface1, (10, 455))
         screen.blit(textSurface2, (250, 455))
         screen.blit(textSurface3, (250, 429))
-        screen.blit(textSurface4, (540, 455))
+        screen.blit(textSurface4, (10, 429)) #(540, 455))
