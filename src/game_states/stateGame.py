@@ -91,7 +91,7 @@ class StateGame(State):
         """
         # Load level ---------------------------------------------------------------------------
         path = "\..\data\levels"
-        filename = "\level" + str(self.level) + ".txt"
+        filename = "\L" + str(self.level) + ".txt"
         fullpath = os.getcwd() + path + filename
         self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
         #print("the shape of the level is:", self.levelMatrix.shape)
@@ -211,7 +211,7 @@ class StateGame(State):
         self.helperSprites.update()
 
         # Induce game over when no progress has been made
-        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+3:
+        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+10:
             if self.levelProgress10secondsAgo[1] == self.levelProgress:
                 self.levelOutcome = -1
             else:
