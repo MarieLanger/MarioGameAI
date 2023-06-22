@@ -93,10 +93,10 @@ class SpriteContainer(SpriteBlock):
 
     def moveRight(self, value=5):
         self.rect.x += value
-        self.collideRect.x -= value
+        self.collideRect.x += value
 
     def move_x(self, value):
         self.rect.x += value
-        self.collideRect.x -= value
+        self.collideRect.x += value
 
 
