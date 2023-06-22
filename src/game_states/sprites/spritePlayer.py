@@ -80,7 +80,7 @@ class SpritePlayer(pygame.sprite.Sprite):
             # bottomleft --> (x,y)
             bottomCol = sprite.rect.collidepoint((self.rect.bottomleft[0], self.rect.bottomleft[1] + 1)) or \
                         sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
-                        sprite.rect.collidepoint((self.rect.bottomright[0] -1, self.rect.bottomright[1] +1 ))
+                        sprite.rect.collidepoint((self.rect.bottomright[0] - 1, self.rect.bottomright[1] +1 ))
                         # -1 got added so that the player doesn't stick to a right wall above 1-tile-wide holes
             if bottomCol:
                 break
@@ -148,13 +148,13 @@ class SpritePlayer(pygame.sprite.Sprite):
         Jumping is only allowed if peach stands still (=has Y-velocity 0 at the moment)
         """
         if self.velocityY == 0:
-            self.velocityY = -11
+            self.velocityY = -13 #-11
 
     def jumpKeyReleased(self):
         """
         The jump height is dependent on how long the key has been pressed.
         """
-        if self.velocityY < -5:
+        if self.velocityY < -3 : #-5:
             self.velocityY = self.velocityY / 2 + 1
 
     def enemyHit(self):

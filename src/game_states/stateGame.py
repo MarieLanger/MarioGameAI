@@ -256,19 +256,18 @@ class StateGame(State):
                     self.blockSprites.add(new_sprite)
                 elif column[row] == 2:  # If pipe
                     # If column above has pipe, then pipe has already been created
-                    if column[row - 1] == 2:
-                        break
-                    height = 32
-                    i = 1
-                    while True:
-                        if column[row + i] == 2:
-                            height += 32
-                            i += 1
-                        else:
-                            break
-                    new_sprite = SpritePipe(row * 16 * 2, columnIndex * 16 * 2 - offset, height)
-                    self.env_sprites.add(new_sprite)
-                    self.blockSprites.add(new_sprite)
+                    if column[row - 1] != 2:
+                        height = 32
+                        i = 1
+                        while True:
+                            if column[row + i] == 2:
+                                height += 32
+                                i += 1
+                            else:
+                                break
+                        new_sprite = SpritePipe(row * 16 * 2, columnIndex * 16 * 2 - offset, height)
+                        self.env_sprites.add(new_sprite)
+                        self.blockSprites.add(new_sprite)
 
                 elif column[row] == 3:  # If container for coin
                     content_sprite = SpriteCoin(-50, columnIndex * 16 * 2 - offset, self,self.player)
@@ -514,7 +513,7 @@ class StateGame(State):
         self.blockSprites.draw(screen)
         self.itemSprites.draw(screen)
         self.playerSprites.draw(screen)  # player is in front of everything
-        # self.helperSprites.draw(screen)
+        self.helperSprites.draw(screen)
 
         # Render coin text
         #textSurface = self.smallFont.render("Coins: " + str(self.coinCount), False, (255, 255, 255))
