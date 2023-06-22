@@ -1,17 +1,56 @@
 import pygame
 
+class HelperSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
 
-class GameOverSprite(pygame.sprite.Sprite):
+    def update(self):
+        pass
+
+
+class ButtonSprite(HelperSprite):
+    """
+    Renders buttons onto the screen and they turn red when pressed.
+    """
+    def __init__(self, x, y):
+        HelperSprite.__init__(self)
+        self.image = pygame.Surface((40, 20))
+        self.image.fill((155, 155, 155))
+        self.rect = self.image.get_rect()
+        self.rect.bottomleft = (x,y)
+
+        self.active = False
+        self.image.fill((55, 55, 55))
+
+    def update(self):
+        pass
+
+    def checkInputs(self, active):
+        if active:
+            if active != self.active:
+                self.active = not self.active
+                self.image.fill((155, 155, 155))
+        else:
+            if active != self.active:
+                self.active = not self.active
+                self.image.fill((55, 55, 55))
+
+
+
+
+
+class GameOverSprite(HelperSprite):
     """
     Detects when player falls down a hole and communicates game over.
     """
 
     def __init__(self, player, game):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((320 * 2, 20))
-        self.image.fill((255, 105, 180))
+        HelperSprite.__init__(self)
+        self.image = pygame.Surface((320 * 2, 60))
+        #self.image.fill((255, 105, 180))
+        #self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect()
-        self.rect.bottomleft = (0, 440)
+        self.rect.topleft = (0, 420)
 
         self.player = player
         self.game = game
@@ -21,14 +60,14 @@ class GameOverSprite(pygame.sprite.Sprite):
             self.game.setLevelOutcome(-1)
 
 
-class KillEnvironmentSpritesSprite(pygame.sprite.Sprite):
+class KillEnvironmentSpritesSprite(HelperSprite):
     """
     Kills sprites after they move outside of the screen to the left.
     Killing off sprites leads to less collision-comparisons.
     """
 
     def __init__(self, env_sprites):
-        pygame.sprite.Sprite.__init__(self)
+        HelperSprite.__init__(self)
         self.image = pygame.Surface((32, 480))
         self.image.fill((255, 105, 180))
         self.rect = self.image.get_rect()
