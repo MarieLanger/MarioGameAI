@@ -77,9 +77,11 @@ class SpritePlayer(pygame.sprite.Sprite):
         topCol = False
 
         for sprite in self.blockGroup.sprites():
+            # bottomleft --> (x,y)
             bottomCol = sprite.rect.collidepoint((self.rect.bottomleft[0], self.rect.bottomleft[1] + 1)) or \
                         sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
-                        sprite.rect.collidepoint((self.rect.bottomright[0], self.rect.bottomright[1] + 1))
+                        sprite.rect.collidepoint((self.rect.bottomright[0] -1, self.rect.bottomright[1] +1 ))
+                        # -1 got added so that the player doesn't stick to a right wall above 1-tile-wide holes
             if bottomCol:
                 break
 
@@ -89,7 +91,7 @@ class SpritePlayer(pygame.sprite.Sprite):
                      sprite.rect.collidepoint((self.rect.topleft[0], self.rect.topleft[1] + 1))
             if topCol:
                 break
-
+        #print("Bottom is touched:", bottomCol)
         return (topCol, bottomCol)
 
     def enforceNoVerticalClipping(self):
