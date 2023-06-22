@@ -19,6 +19,7 @@ class StateTitle(State):
     def __init__(self, game):
         State.__init__(self, game)
 
+
         # Initialize all the text
         self.text = "Super Princess Peach"
         self.text_pos = (100, 20)  # x-position(low:left,high:right)   y-position (low:up, high:down)
@@ -37,11 +38,10 @@ class StateTitle(State):
         self.aiSelection_choices = ["AI1"]  # todo: add new ones here later
 
         # todo: get all pickle files from "../data/ai/genomes/"
-        print(os.listdir("../data/ai/genomes/"))
+        #print(os.listdir("../data/ai/genomes/"))
         for file in os.listdir("../data/ai/genomes/"):
             if file.endswith(".pickle"):
                 self.aiSelection_choices.append(str(file[0:-7]))
-
 
         self.subSelecting = False  # Does user select the sub-options atm or not? (False=not)
         self.subSelection_selected = 0
@@ -63,6 +63,10 @@ class StateTitle(State):
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
         self.mediumFont = pygame.font.SysFont('Comic Sans MS', 30)
         self.bigFont = pygame.font.SysFont('Comic Sans MS', 45)
+
+
+
+
 
     def update(self):
         for event in pygame.event.get():

@@ -19,11 +19,11 @@ class Game:
         # Create state machine and push first state onto it
         self.stateMachine = StateMachine()
         self.stateMachine.push(StateTitle(self))  # title screen
-
         # Setup pygame
         pygame.init()
         # Game canvas is w=320, h=240
         self.gameCanvas = pygame.Surface((WIDTH, HEIGHT))
+
         # Upscale to: w=640, h=480
         self.screen = pygame.display.set_mode((WIDTH * 2, HEIGHT * 2))
 

@@ -14,7 +14,7 @@ class ButtonSprite(HelperSprite):
     """
     def __init__(self, x, y):
         HelperSprite.__init__(self)
-        self.image = pygame.Surface((40, 20))
+        self.image = pygame.Surface((20, 10))
         self.image.fill((155, 155, 155))
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x,y)

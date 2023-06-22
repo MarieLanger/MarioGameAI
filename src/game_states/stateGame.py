@@ -148,17 +148,17 @@ class StateGame(State):
         self.helperSprites.add(GameOverSprite(self.player, self))
         self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
 
-        x = 500
+        x = 550
         y = 470
         self.buttonSprites.append(ButtonSprite(x,y))
-        self.buttonSprites.append(ButtonSprite(x+40,y-20))
-        self.buttonSprites.append(ButtonSprite(x+40*2,y))
-        self.buttonSprites.append(ButtonSprite(x+40,y))
+        self.buttonSprites.append(ButtonSprite(x+20,y-10))
+        self.buttonSprites.append(ButtonSprite(x+20*2,y))
+        #self.buttonSprites.append(ButtonSprite(x+20,y))
 
         self.helperSprites.add(self.buttonSprites[0])
         self.helperSprites.add(self.buttonSprites[1])
         self.helperSprites.add(self.buttonSprites[2])
-        self.helperSprites.add(self.buttonSprites[3])
+        #self.helperSprites.add(self.buttonSprites[3])
 
 
     def update (self):
@@ -228,7 +228,7 @@ class StateGame(State):
 
 
         # Induce game over when no progress has been made
-        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+10:
+        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+3:
             if self.levelProgress10secondsAgo[1] == self.levelProgress:
                 self.levelOutcome = -1
             else:
@@ -543,8 +543,10 @@ class StateGame(State):
         textSurface1 = self.tinyFont.render("Progress: "+ str(self.pixelProgress-736), False, (175, 125, 145))
         textSurface2 = self.tinyFont.render("Enemy kills: " + str(self.enemiesKilled), False, (170,118,118))
         textSurface3 = self.tinyFont.render("Coins: " + str(self.coinCount), False, (110, 110, 38))
-        textSurface4 = self.tinyFont.render("Time: " + str(int((self.currentTime - self.startTime)/1000)), False, (110, 110, 110))
+        textSurface4 = self.tinyFont.render("Time: " + str(int((self.currentTime - self.startTime)/1000)), False, (175, 125, 145))
+        textSurface5 = self.tinyFont.render("Keys: ", False, (110, 110, 110))
         screen.blit(textSurface1, (10, 455))
         screen.blit(textSurface2, (250, 455))
         screen.blit(textSurface3, (250, 429))
         screen.blit(textSurface4, (10, 429)) #(540, 455))
+        screen.blit(textSurface5, (490, 455))
