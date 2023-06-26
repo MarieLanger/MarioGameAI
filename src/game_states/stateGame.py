@@ -3,8 +3,9 @@ import os
 
 import numpy as np
 import pygame
+import pickle
 
-from .sprites.helperSprites import GameOverSprite, KillEnvironmentSpritesSprite, ButtonSprite
+from .sprites.helperSprites import FallingHelperSprite, KillEnvironmentHelperSprite, SpriteButton
 from .sprites.spriteBlock import SpriteBlock
 from .sprites.spriteCoin import SpriteCoin
 from .sprites.spriteContainer import SpriteContainer
@@ -28,7 +29,7 @@ class StateGame(State):
     State for when the game gets played with human inputs.
     """
 
-    def __init__(self, game, inputHandler, levelEndHandler, fitnessfunction=0):
+    def __init__(self, game, inputHandler, levelEndHandler, additional_input=0):
         State.__init__(self, game)
 
         data = json.load(open('../data/titleState.json'))
@@ -37,17 +38,28 @@ class StateGame(State):
         self.tinyFont = pygame.font.SysFont('consolas', 17)
 
         self.inputHandler = None
+        self.levelEndHandler = None
+
+        # How to handle inputs
         if inputHandler == "Human":
             self.inputHandler = InputHandlerHuman(self)
         elif inputHandler == "AI":
             self.inputHandler = InputHandlerAI(self)
 
-        self.levelEndHandler = None
-        # todo: set this with levelOutcomeHandler-parameter
+        # How to handle the end of a level
         if levelEndHandler == "Play":
             self.levelEndHandler = StandardPlayHandler(self)
         elif levelEndHandler == "Train":
-            self.levelEndHandler = AITrainHandler(self, self.inputHandler, fitnessfunction)
+            # additional input is fitness function type here
+            self.levelEndHandler = AITrainHandler(self, self.inputHandler, additional_input)
+
+        # If AI showcase, set genome
+        if inputHandler == "AI" and levelEndHandler == "Play":
+            # additional input is the name of the genome here
+            print("Testing", additional_input)
+            with open('../data/ai/genomes/' + additional_input + ".pickle", "rb") as f:
+                genome = pickle.load(f)
+                self.inputHandler.setGenome(genome)
 
 
         # Declaring game related variables -----------------------------------------------
@@ -145,14 +157,14 @@ class StateGame(State):
         for col in range(24):
             self._loadSpriteColumn(self.levelMatrix[:, col], col, 0)
 
-        self.helperSprites.add(GameOverSprite(self.player, self))
-        self.helperSprites.add(KillEnvironmentSpritesSprite(self.env_sprites))
+        self.helperSprites.add(FallingHelperSprite(self.player, self))
+        self.helperSprites.add(KillEnvironmentHelperSprite(self.env_sprites))
 
         x = 550
         y = 470
-        self.buttonSprites.append(ButtonSprite(x,y))
-        self.buttonSprites.append(ButtonSprite(x+20,y-10))
-        self.buttonSprites.append(ButtonSprite(x+20*2,y))
+        self.buttonSprites.append(SpriteButton(x,y))
+        self.buttonSprites.append(SpriteButton(x+20,y-10))
+        self.buttonSprites.append(SpriteButton(x+20*2,y))
         #self.buttonSprites.append(ButtonSprite(x+20,y))
 
         self.helperSprites.add(self.buttonSprites[0])

@@ -8,7 +8,7 @@ class HelperSprite(pygame.sprite.Sprite):
         pass
 
 
-class ButtonSprite(HelperSprite):
+class SpriteButton(HelperSprite):
     """
     Renders buttons onto the screen and they turn red when pressed.
     """
@@ -25,13 +25,13 @@ class ButtonSprite(HelperSprite):
     def update(self):
         pass
 
-    def checkInputs(self, active):
-        if active:
-            if active != self.active:
+    def checkInputs(self, activeButton):
+        if activeButton:
+            if activeButton != self.active:
                 self.active = not self.active
                 self.image.fill((155, 155, 155))
         else:
-            if active != self.active:
+            if activeButton != self.active:
                 self.active = not self.active
                 self.image.fill((55, 55, 55))
 
@@ -39,7 +39,7 @@ class ButtonSprite(HelperSprite):
 
 
 
-class GameOverSprite(HelperSprite):
+class FallingHelperSprite(HelperSprite):
     """
     Detects when player falls down a hole and communicates game over.
     """
@@ -60,7 +60,7 @@ class GameOverSprite(HelperSprite):
             self.game.setLevelOutcome(-1)
 
 
-class KillEnvironmentSpritesSprite(HelperSprite):
+class KillEnvironmentHelperSprite(HelperSprite):
     """
     Kills sprites after they move outside of the screen to the left.
     Killing off sprites leads to less collision-comparisons.
@@ -78,4 +78,5 @@ class KillEnvironmentSpritesSprite(HelperSprite):
     def update(self):
         col_list = pygame.sprite.spritecollide(self, self.env_sprites, False)
         for sprite in col_list:
-            sprite.remove(self.env_sprites)
+            for group in sprite.groups():
+                sprite.remove(group)

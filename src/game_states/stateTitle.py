@@ -126,7 +126,7 @@ class StateTitle(State):
                             if self.aiType_selected == 0:
                                 return StateGame(self.game, "AI", "Train", self.selection_selected+1)
                             elif self.aiType_selected == 1:
-                                return StateGame(self.game, "AI", "Play")
+                                return StateGame(self.game, "AI", "Play", self.aiSelection_choices[self.aiSelection_selected])
 
 
 

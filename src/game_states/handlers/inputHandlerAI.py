@@ -30,18 +30,6 @@ class InputHandlerAI(InputHandler):
                              config_path)
 
 
-        # Initialize population
-        #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-85')
-        self.p = neat.Population(self.config)
-
-        # Initialize reporters
-        self.p.add_reporter(neat.StdOutReporter(True))
-        self.stats = neat.StatisticsReporter()
-        self.p.add_reporter(self.stats)
-        self.p.add_reporter(neat.Checkpointer(1))
-
-
-
         """
         Within eval_genomes, the fitness is modified.
         Hence, run() can stop early if the max fitness was reached.
@@ -55,9 +43,6 @@ class InputHandlerAI(InputHandler):
         - Create network
         - handleInputs() is basically moveAIPaddles()
         - Within handleInputs(), game state gets queried
-        
-        
-        
         """
 
 
@@ -71,18 +56,31 @@ class InputHandlerAI(InputHandler):
 
         # Put states into net and calculate output
         output = self.net.activate(self.gameState.flatten('C').tolist() + self.itemState.flatten('C').tolist())
-        decision = output.index(max(output))
+        #print(output)
+        #decision = output.index(max(output))
 
         self.game.leftKeyHold = False
         self.game.rightKeyHold = False
         self.game.upKeyHold = False
 
-        if decision == 0:
+        # go left or go right
+        if output[0] > output[2]:
+            if output[0] > 5:
+                self.game.leftKeyHold = True
+        else:
+            if output[2] > 5:
+                self.game.rightKeyHold = True
+
+        # jump or not jump
+        if output[1] > 5:
+            self.game.upKeyHold = True
+
+        """if decision == 0:
             self.game.leftKeyHold = True
         elif decision == 1:
             self.game.upKeyHold = True
         elif decision == 2:
-            self.game.rightKeyHold = True
+            self.game.rightKeyHold = True"""
 
 
     def _getItemState(self):
@@ -91,7 +89,7 @@ class InputHandlerAI(InputHandler):
             self.itemState[state.getID()] = 1
 
     def _getGameState(self):
-        # MATRIX:
+        # MATRIX (for now):
         # 2 tiles behind player, 7 tiles in front of player --> x:10
         # 2 tiles under player, 5 tiles above player --> y: 8
 
@@ -99,6 +97,10 @@ class InputHandlerAI(InputHandler):
         playerY = self.game.player.rect.bottom
 
         # Reset matrix
+        """
+        IMPORTANT:
+        If matrix is modified, the next line *AND* the _withinStateMatrix()-method in SpriteBasic needs to be modified!
+        """
         self.gameState = np.zeros((8,10,2))
 
         # Idea: Delegate to sprites. Then sprites can decide whether or not they write or what they write
@@ -112,8 +114,6 @@ class InputHandlerAI(InputHandler):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.game.game.exitCurrentState()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_x:
                     self.game.game.exitCurrentState()

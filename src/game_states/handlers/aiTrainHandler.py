@@ -5,6 +5,7 @@ import neat
 import pickle
 import time
 from pathlib import Path
+import shutil
 
 from .levelEndHandler import LevelEndHandler
 from ..stateTrainingCompleted import StateTrainingCompleted
@@ -29,19 +30,28 @@ class AITrainHandler(LevelEndHandler):
                                   config_path)
 
         # Initialize population
-        #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-85')
-        self.p = neat.Population(self.config)
+        self.currentGeneration = 0
+
+        if self.currentGeneration == 0:
+            self.p = neat.Population(self.config)
+        else:
+            self.p = neat.Checkpointer.restore_checkpoint('../data/ai/genomes/neat-checkpoint-' + str(self.currentGeneration))
+
+        # When starting from checkpoint 5, then generation 5 is finished and we need to continue with generation 6
+        #self.currentGeneration += 1
+
         self.genomes = list(self.p.population.items())
         self.genomeCount = len(self.genomes)
         self.currentGenomeID = 0
-        self.currentGeneration = 0
         self.maxGenerations = 50
 
-        print(self.genomes)
-        print(self.genomeCount)
-        print(self.genomes[self.currentGenomeID][1])
+        # print(self.genomes)
+        # print(self.genomeCount)
+        # print(self.genomes[self.currentGenomeID][1])
 
         self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
+
+        self.fitnesses = []
 
 
 
@@ -61,7 +71,6 @@ class AITrainHandler(LevelEndHandler):
 
 
     def handleLevelEnd(self, outcome, progress, time, coins, enemies):
-
         pass
 
 
