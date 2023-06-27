@@ -6,6 +6,7 @@ import pygame
 
 from .state import State
 from .stateGame import StateGame
+from .stateOther import StateOther
 
 
 
@@ -21,8 +22,8 @@ class StateTitle(State):
 
 
         # Initialize all the text
-        self.text = "Super Princess Peach"
-        self.text_pos = (100, 20)  # x-position(low:left,high:right)   y-position (low:up, high:down)
+        self.text = "SUPER M[ai]RIO BROS"
+        self.text_pos = (80, 20)  # x-position(low:left,high:right)   y-position (low:up, high:down)
         self.text_col = (255, 255, 255)
 
         self.menu = ("Human input", "AI input", "other")
@@ -35,7 +36,7 @@ class StateTitle(State):
         self.level_choices = ("all", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.aiType_choices = ("Train AI", "Test AI")
         self.selection_choices = ("speedrun", "speedrun + coins", "speedrun + coins + enemies")
-        self.aiSelection_choices = ["AI1"]  # todo: add new ones here later
+        self.aiSelection_choices = []#["AI1"]  # todo: add new ones here later
 
         # todo: get all pickle files from "../data/ai/genomes/"
         #print(os.listdir("../data/ai/genomes/"))
@@ -60,6 +61,7 @@ class StateTitle(State):
 
         # Initialize fonts
         pygame.font.init()
+        self.tinyFont = pygame.font.SysFont('Comic Sans MS', 17)
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
         self.mediumFont = pygame.font.SysFont('Comic Sans MS', 30)
         self.bigFont = pygame.font.SysFont('Comic Sans MS', 45)
@@ -127,6 +129,8 @@ class StateTitle(State):
                                 return StateGame(self.game, "AI", "Train", self.selection_selected+1)
                             elif self.aiType_selected == 1:
                                 return StateGame(self.game, "AI", "Play", self.aiSelection_choices[self.aiSelection_selected])
+                        elif self.menuSelection == 2:
+                            return StateOther(self.game)
 
 
 
@@ -158,6 +162,10 @@ class StateTitle(State):
         # self._displayText("(settings:)",(80,80,80),(200,210),self.smallFont,screen)
         self._displayText("____________________________________________", (80, 80, 80), (20, 220), self.smallFont,
                           screen)
+        self._displayText("____________________________________________", (80, 80, 80), (20, 380), self.smallFont,
+                          screen)
+        self._displayText("""Press SPACE to select a state, press X to adjust options.\nWithin a state, press X to return to title screen.""", (180,180,180), (20,420), self.tinyFont, screen)
+
 
         # Menu sub selections
         cols = ((100, 100, 100), (255, 255, 255))

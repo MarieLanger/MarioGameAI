@@ -53,21 +53,20 @@ class AITrainHandler(LevelEndHandler):
 
         self.fitnesses = []
 
-
-
-
         # Initialize reporters
         self.p.add_reporter(neat.StdOutReporter(True))
         self.stats = neat.StatisticsReporter()
         self.p.add_reporter(self.stats)
         self.p.add_reporter(neat.Checkpointer(1))
 
-        # todo: maybe bad
+        # Start the generation
         self.p.reporters.start_generation(self.p.generation)
 
 
-        # todo: put this part into handleLevelEnd
-        # Evaluate genomes 50 times max
+
+
+
+
 
 
     def handleLevelEnd(self, outcome, progress, time, coins, enemies):
