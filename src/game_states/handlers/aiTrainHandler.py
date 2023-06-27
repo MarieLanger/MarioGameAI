@@ -53,6 +53,9 @@ class AITrainHandler(LevelEndHandler):
 
         self.fitnesses = []
 
+
+
+
         # Initialize reporters
         self.p.add_reporter(neat.StdOutReporter(True))
         self.stats = neat.StatisticsReporter()
@@ -71,6 +74,5 @@ class AITrainHandler(LevelEndHandler):
 
     def handleLevelEnd(self, outcome, progress, time, coins, enemies):
         pass
-
 
 

@@ -6,7 +6,7 @@ from game_states.stateTitle import StateTitle
 from settings import *
 
 
-class Game:
+class Main:
     """
     Main class which holds all the game components.
     """
@@ -88,5 +88,5 @@ class StateMachine():
 
 if __name__ == '__main__':
     print("Starting Super Princess Peach")
-    game = Game()
+    game = Main()
     game.run()
