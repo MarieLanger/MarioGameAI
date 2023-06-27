@@ -36,6 +36,7 @@ class Game:
         """
         # Event loop
         while True:
+            #print(self.clock.get_fps())
             # Get state which lies on top of stack
             topState = self.stateMachine.peek()
 

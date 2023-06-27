@@ -367,7 +367,7 @@ class PlayerStateStar(PlayerState):
 
     def updateState(self):
         self.counter += 1
-        if self.counter > 100:
+        if self.counter > 1000:
             self.player.removeState(False)
             self.player.states.pop()
 
