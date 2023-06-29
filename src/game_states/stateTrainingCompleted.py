@@ -42,7 +42,7 @@ class StateTrainingCompleted(State):
 
         # Display text on screen
         textSurface = self.bigFont.render("Training finished! :)", False, (255, 255, 255))
-        screen.blit(textSurface, (130, 30))
+        screen.blit(textSurface, (100, 30))
 
         textSurface = self.smallFont.render("(Press space to go back to the title screen)", False, (255, 255, 255))
-        screen.blit(textSurface, (170, 100))
+        screen.blit(textSurface, (50, 100))

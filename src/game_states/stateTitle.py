@@ -162,9 +162,9 @@ class StateTitle(State):
         # self._displayText("(settings:)",(80,80,80),(200,210),self.smallFont,screen)
         self._displayText("____________________________________________", (80, 80, 80), (20, 220), self.smallFont,
                           screen)
-        self._displayText("____________________________________________", (80, 80, 80), (20, 380), self.smallFont,
+        self._displayText("____________________________________________", (80, 80, 80), (20, 350), self.smallFont,
                           screen)
-        self._displayText("""Press SPACE to select a state, press X to adjust options.\nWithin a state, press X to return to title screen.""", (180,180,180), (20,420), self.tinyFont, screen)
+        self._displayText("""• Press LEFT/RIGHT to navigate between program states.\n• Press SPACE to select a state, press X to adjust options.\n• Within a state, press X to return to the title screen.""", (180,180,180), (20,380), self.tinyFont, screen)
 
 
         # Menu sub selections

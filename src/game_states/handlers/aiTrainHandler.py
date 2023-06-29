@@ -150,6 +150,7 @@ class AITrainHandler(LevelEndHandler):
                         best = g
                 self.p.reporters.post_evaluate(self.p.config, self.p.population, self.p.species, best)
 
+
                 # Track the best genome ever seen.
                 if self.p.best_genome is None or best.fitness > self.p.best_genome.fitness:
                     self.p.best_genome = best
@@ -171,9 +172,12 @@ class AITrainHandler(LevelEndHandler):
                         n = len(s.members)  # number members in species
                         file.write(str(sid) + "," + str(n))
 
-                        for fitn in self.fitnesses:
-                            file.write("," + str(fitn))
-                    file.write("\n")
+                        for key in s.members.keys():
+                            file.write("," + str(s.members[key].fitness))
+
+                        """for fitn in self.fitnesses:
+                            file.write("," + str(fitn))"""
+                        file.write("\n")
 
 
                 # Create the next generation from the current generation.
@@ -195,7 +199,27 @@ class AITrainHandler(LevelEndHandler):
 
                 # Divide the new population into species.
                 self.p.species.speciate(self.p.config, self.p.population, self.p.generation)
+
+
+                # todo: Bug in neat library found?
+                """
+                reporters.end_generation() makes the --- --- print statements
+                
+                In the above, the reproducing happens before the species get speciated!!
+                Hence, at this point there are new individuals in a species for which there hasn't been a fitness set yet.
+                The fitness of a species which gets printed is from the generation beforehand!! 
+                If a species has 4 members in iteration X and 7 in iteration X+1,
+                then what gets printed is:
+                The species has 7 members and has the fitness from these 4 individuals.
+                
+                The fitness gets printed via:
+                f = "--" if s.fitness is None else f"{s.fitness:.3f}"
+                
+                Which makes sense because a species might not have any fitness at this point if it consists of only 
+                new members and no old ones.
+                """
                 self.p.reporters.end_generation(self.p.config, self.p.population, self.p.species)
+
 
                 self.p.generation += 1
 
