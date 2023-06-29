@@ -181,22 +181,6 @@ class StateGame(State):
         self.inputHandler.handleInputs()
 
 
-        # todo: https://neat-python.readthedocs.io/en/latest/_modules/population.html
-        # ???????????????????????
-        """
-        for 50 generations do:
-            - initialize reporters
-            
-            - fitness function is basically for each genome:
-                play 1 level + calculate the fitness
-            
-            - after all genomes got iterated: 
-                - mutation stuff
-                - ......
-        """
-
-
-
         # todo: Put all of the below into method (?)
         # If up-key got released, then register end of jump
         # If-statement checks if up-key got released, that way jumpKeyReleased() is not called in the input-handler!
