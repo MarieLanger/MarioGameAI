@@ -102,7 +102,7 @@ class StateGame(State):
         """
         # Load level ---------------------------------------------------------------------------
         path = "\..\data\levels"
-        filename = "\L" + str(self.level) + ".txt"
+        filename = "\level" + str(self.level) + ".txt"
         fullpath = os.getcwd() + path + filename
         self.levelMatrix = np.genfromtxt(fullpath, delimiter='\t')  # A guide which sprites to create
         #print("the shape of the level is:", self.levelMatrix.shape)
