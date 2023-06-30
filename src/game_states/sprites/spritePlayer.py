@@ -177,6 +177,7 @@ class SpritePlayer(pygame.sprite.Sprite):
                     self.removeState(True)
         return player_hit  # True if player got hit, False if player "hits back" via star
 
+
     def addState(self, state):
         """
         Adds an item state according to stack data structure.
@@ -340,6 +341,8 @@ class PlayerStateStar(PlayerState):
         # width, height
         self.size = [16 * 2, 32 * 2]
         self.color = (255, 105, 180)
+
+        self.player.immunity = False
 
         # counter
         self.counter = 0

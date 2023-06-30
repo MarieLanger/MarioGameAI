@@ -136,7 +136,7 @@ class AITrainHandler(LevelEndHandler):
         # If all genomes have been evaluated:
         else:
             # Else, go either to a new generation (if) or terminate training (else)
-            if self.currentGeneration < 50:
+            if self.currentGeneration < 200:
 
                 # Source of the following code: NEAT library's population.run() method.
 
@@ -250,7 +250,7 @@ class AITrainHandler(LevelEndHandler):
                 self.currentGenomeID = 0
                 self.currentGeneration += 1
                 self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
-                self.p.reporters.start_generation(self.p.generation)  # todo: maybe bad
+                self.p.reporters.start_generation(self.p.generation)
                 self.fitnesses = []
 
             else:

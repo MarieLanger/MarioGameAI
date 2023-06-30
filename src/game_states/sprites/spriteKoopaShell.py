@@ -56,9 +56,6 @@ class SpriteKoopaShell(SpriteGoomba):
                     else:
                         self.direction = -1  # if player stomped from right, go left
 
-                # todo: The problem seemed to be that i was so "deep" in the shell that even after I jumped up, I
-                # todo: was not able to get "out" of it.
-                # todo: The solution is now to just make the player jump higher
                 self.player.velocityY = -17
                 self.player.jumpKeyReleased()
             else:

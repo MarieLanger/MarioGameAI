@@ -36,9 +36,9 @@ class StateTitle(State):
         self.level_choices = ("all", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.aiType_choices = ("Train AI", "Test AI")
         self.selection_choices = ("speedrun", "speedrun + coins", "speedrun + coins + enemies")
-        self.aiSelection_choices = []#["AI1"]  # todo: add new ones here later
+        self.aiSelection_choices = []
 
-        # todo: get all pickle files from "../data/ai/genomes/"
+        # Get all pickle files from "../data/ai/genomes/"
         #print(os.listdir("../data/ai/genomes/"))
         for file in os.listdir("../data/ai/genomes/"):
             if file.endswith(".pickle"):

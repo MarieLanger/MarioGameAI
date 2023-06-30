@@ -180,8 +180,6 @@ class StateGame(State):
         # Get the inputs from the handler
         self.inputHandler.handleInputs()
 
-
-        # todo: Put all of the below into method (?)
         # If up-key got released, then register end of jump
         # If-statement checks if up-key got released, that way jumpKeyReleased() is not called in the input-handler!
         if self.previousUpInput and not self.upKeyHold:
@@ -496,7 +494,10 @@ class StateGame(State):
         self.enemiesKilled += 1
 
     def increaseLevel(self):
-        self.level += 1
+        if self.level == 5:
+            self.level = 1
+        else:
+            self.level += 1
 
 
 

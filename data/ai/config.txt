@@ -1,22 +1,26 @@
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 10000
-pop_size              = 10
+fitness_threshold     = 100000
+pop_size              = 30
 reset_on_extinction   = False
 
 [DefaultStagnation]
 species_fitness_func = mean
-max_stagnation       = 10
+max_stagnation       = 15
 species_elitism      = 2
 
 [DefaultReproduction]
-elitism            = 2
+elitism            = 5
 survival_threshold = 0.2
+min_species_size = 2
+
+[DefaultSpeciesSet]
+compatibility_threshold = 1.3
 
 [DefaultGenome]
 # node activation options
 activation_default      = relu
-activation_mutate_rate  = 1.0
+activation_mutate_rate  = 0.0
 activation_options      = relu
 
 # node aggregation options
@@ -39,7 +43,7 @@ compatibility_weight_coefficient   = 0.5
 
 # connection add/remove rates
 conn_add_prob           = 0.5
-conn_delete_prob        = 0.5
+conn_delete_prob        = 0.4
 
 # connection enable options
 enabled_default         = True
@@ -50,7 +54,7 @@ initial_connection      = full_direct
 
 # node add/remove rates
 node_add_prob           = 0.2
-node_delete_prob        = 0.2
+node_delete_prob        = 0.1
 
 # network parameters
 num_hidden              = 0
@@ -74,6 +78,3 @@ weight_min_value        = -30
 weight_mutate_power     = 0.5
 weight_mutate_rate      = 0.8
 weight_replace_rate     = 0.1
-
-[DefaultSpeciesSet]
-compatibility_threshold = 1.3
