@@ -51,7 +51,6 @@ class AITrainHandler(LevelEndHandler):
 
         self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
 
-        self.fitnesses = []
 
 
 
@@ -103,22 +102,26 @@ class AITrainHandler(LevelEndHandler):
             if self.fitnessfunction == 1:
                 if outcome == -1:
                     self.genomes[self.currentGenomeID][1].fitness = progress  # goes up until ~6500, and 50s for level
-                    self.fitnesses.append(progress)
                 elif outcome == +1:
-                    self.genomes[self.currentGenomeID][1].fitness = 8000 + 500 - time
-                    self.fitnesses.append(8000 + 500 - time)
+                    self.genomes[self.currentGenomeID][1].fitness = 8000 + (6000-(time*200))
+                    # Normal player needs between 30-45 seconds.
+                    # AI trains at twice the speed
+                    # 0: 30 seconds
+                    # 2000: 20 seconds
+                    # 4000: 10 seconds
+                    # .....
 
             elif self.fitnessfunction == 2:
                 if outcome == -1:
-                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*300
+                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*240*32
                 elif outcome == +1:
-                    self.genomes[self.currentGenomeID][1].fitness = 80000 + coins*300 + (5000 - (time*2))
+                    self.genomes[self.currentGenomeID][1].fitness = 8000 + coins*240*32 + (6000-(time*200))
 
             elif self.fitnessfunction == 3:
                 if outcome == -1:
-                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*300 + enemies*300
+                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*240*32 + enemies*240*32
                 elif outcome == +1:
-                    self.genomes[self.currentGenomeID][1].fitness = 80000 + coins*300 + enemies*300 + (5000 - (time*2))
+                    self.genomes[self.currentGenomeID][1].fitness = 8000 + coins*240*32 + enemies*240*32 + (6000-(time*200))
 
             else:
                 print("Error: Invalid fitness function")
@@ -175,8 +178,6 @@ class AITrainHandler(LevelEndHandler):
                         for key in s.members.keys():
                             file.write("," + str(s.members[key].fitness))
 
-                        """for fitn in self.fitnesses:
-                            file.write("," + str(fitn))"""
                         file.write("\n")
 
 
@@ -251,7 +252,6 @@ class AITrainHandler(LevelEndHandler):
                 self.currentGeneration += 1
                 self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
                 self.p.reporters.start_generation(self.p.generation)
-                self.fitnesses = []
 
             else:
                 # Finish the algorithm and go back to title screen
