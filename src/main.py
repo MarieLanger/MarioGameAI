@@ -87,6 +87,6 @@ class StateMachine():
 
 
 if __name__ == '__main__':
-    print("Starting Super Princess Peach")
+    print("Starting Super M[ai]RIO BROS")
     game = Main()
     game.run()

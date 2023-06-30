@@ -43,8 +43,7 @@ class SpriteGoomba(SpriteEnemy):
         if pygame.sprite.collide_rect(self, self.player):
             # If the previous position was higher than the enemy, then the collision came from the top
             # Necessary because yeeting into the enemy from the side should not kill them
-            # todo: note, changed it into <= (before: <)
-            if self.playerPrevRect.bottom <= self.rect.top:
+            if self.playerPrevRect.bottom <= self.rect.top:  # before: <
                 self.player.velocityY = -11
                 self.player.jumpKeyReleased()
                 # --------
@@ -52,10 +51,10 @@ class SpriteGoomba(SpriteEnemy):
 
             else:
                 # If player came from side, communicate that player got hit
-                player_hit = self.player.enemyHit()
+                player_hit = self.player.enemyHit()  # todo: false
                 # True if hit, False if player "hits back" via star
                 if not player_hit:
-                    self.kill()
+                    self.kill()  # todo: it goes there
                 # If the player got hit, the enemy does not care!
 
         # Update previous position from player
