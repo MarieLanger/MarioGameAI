@@ -281,7 +281,7 @@ class StateGame(State):
                         self.blockSprites.add(new_sprite)
 
                 elif column[row] == 3:  # If container for coin
-                    content_sprite = SpriteCoin(-50, columnIndex * 16 * 2 - offset, self,self.player)
+                    content_sprite = SpriteCoin(-500, columnIndex * 16 * 2 - offset, self,self.player)
                     self.env_sprites.add(content_sprite)
                     self.itemSprites.add(content_sprite)
 
@@ -299,7 +299,7 @@ class StateGame(State):
                                                 self.blockSprites)
                     self.env_sprites.add(new_sprite)
                     self.itemSprites.add(new_sprite)"""
-                    content_sprite = SpriteMushroom(-50, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                    content_sprite = SpriteMushroom(-500, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
                     self.env_sprites.add(content_sprite)
                     self.itemSprites.add(content_sprite)
 
@@ -308,7 +308,7 @@ class StateGame(State):
                     self.env_sprites.add(new_sprite)
                     self.blockSprites.add(new_sprite)
                 elif column[row] == 5:  # if container with star
-                    content_sprite = SpriteStar(-50, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
+                    content_sprite = SpriteStar(-500, columnIndex * 16 * 2 - offset, self.player, self.blockSprites)
                     self.env_sprites.add(content_sprite)
                     self.itemSprites.add(content_sprite)
 
