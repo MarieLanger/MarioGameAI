@@ -139,7 +139,7 @@ class AITrainHandler(LevelEndHandler):
         # If all genomes have been evaluated:
         else:
             # Else, go either to a new generation (if) or terminate training (else)
-            if self.currentGeneration < 110:
+            if self.currentGeneration < 102:
 
                 # Source of the following code: NEAT library's population.run() method.
 
@@ -240,7 +240,7 @@ class AITrainHandler(LevelEndHandler):
                 if self.p.config.no_fitness_termination:
                     self.p.reporters.found_solution(self.p.config, self.p.generation, self.p.best_genome)
 
-                winner = self.p.best_genome
+                #winner = self.p.best_genome
 
 
 
