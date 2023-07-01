@@ -222,7 +222,7 @@ class StateGame(State):
 
 
         # Induce game over when no progress has been made
-        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+3:
+        if self.currentTime/1000 > self.levelProgress10secondsAgo[0]+2:
             if self.levelProgress10secondsAgo[1] == self.levelProgress:
                 self.levelOutcome = -1
             else:

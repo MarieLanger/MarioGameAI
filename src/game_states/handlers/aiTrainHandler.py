@@ -113,15 +113,15 @@ class AITrainHandler(LevelEndHandler):
 
             elif self.fitnessfunction == 2:
                 if outcome == -1:
-                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*240*32
+                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*24*32
                 elif outcome == +1:
-                    self.genomes[self.currentGenomeID][1].fitness = 8000 + coins*240*32 + (6000-(time*200))
+                    self.genomes[self.currentGenomeID][1].fitness = 8000 + coins*24*32 + (6000-(time*200))
 
             elif self.fitnessfunction == 3:
                 if outcome == -1:
-                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*240*32 + enemies*240*32
+                    self.genomes[self.currentGenomeID][1].fitness = progress + coins*24*32 + enemies*24*32
                 elif outcome == +1:
-                    self.genomes[self.currentGenomeID][1].fitness = 8000 + coins*240*32 + enemies*240*32 + (6000-(time*200))
+                    self.genomes[self.currentGenomeID][1].fitness = 8000 + coins*24*32 + enemies*24*32 + (6000-(time*200))
 
             else:
                 print("Error: Invalid fitness function")
@@ -139,7 +139,7 @@ class AITrainHandler(LevelEndHandler):
         # If all genomes have been evaluated:
         else:
             # Else, go either to a new generation (if) or terminate training (else)
-            if self.currentGeneration < 200:
+            if self.currentGeneration < 110:
 
                 # Source of the following code: NEAT library's population.run() method.
 
@@ -152,6 +152,19 @@ class AITrainHandler(LevelEndHandler):
                     if best is None or g.fitness > best.fitness:
                         best = g
                 self.p.reporters.post_evaluate(self.p.config, self.p.population, self.p.species, best)
+
+
+                # own code: Save best genome in this generation
+                winner = None
+                bestGen = 0
+                name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
+
+                for g in self.p.population.values():
+                    if g.fitness > bestGen:
+                        winner = g
+                        bestGen = g.fitness
+                with open(name, "wb") as f:
+                    pickle.dump(winner, f)
 
 
                 # Track the best genome ever seen.
@@ -233,10 +246,10 @@ class AITrainHandler(LevelEndHandler):
 
                 # Note: Starting from here, the code got added by us and was not part of Population.run()
 
-                # Save the best genome in folder
+                """# Save the best genome in folder
                 name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
                 with open(name, "wb") as f:
-                    pickle.dump(winner, f)
+                    pickle.dump(winner, f)"""
 
                 # Move the checkpoint file
                 name = "neat-checkpoint-" + str(self.currentGeneration)
