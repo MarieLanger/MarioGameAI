@@ -47,9 +47,25 @@ class AITrainHandler(LevelEndHandler):
 
         # print(self.genomes)
         # print(self.genomeCount)
-        # print(self.genomes[self.currentGenomeID][1])
+        print(self.genomes[self.currentGenomeID][1])
 
         self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
+        print(self.inputHandler.genome)
+
+        print(self.p)
+        print(self.p.population)
+        print(self.p.population.items())
+        print(len(self.p.population.items()))
+        #print(list(self.p.population.items())[0][1])
+        print(list(self.p.population.items())[0][1].fitness)
+
+        #list(self.p.population.items())[0][1] = (1,2)
+        #print(list(self.p.population.items())[0][1])
+
+        #list(self.p.population.items())[0][1].fitness = 10
+
+        self.genomes[0][1].fitness = 0
+        print(list(self.p.population.items())[0][1].fitness)
 
 
 
@@ -278,6 +294,13 @@ class AITrainHandler(LevelEndHandler):
                 name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
                 with open(name, "wb") as f:
                     pickle.dump(winner, f)"""
+
+                for g in self.genomes:
+                    g[1].fitness = None
+
+
+                #self.genomes[self.currentGenomeID][1].fitness
+
 
                 # Move the checkpoint file
                 name = "neat-checkpoint-" + str(self.currentGeneration)
