@@ -102,6 +102,11 @@ class AITrainHandler(LevelEndHandler):
             if self.fitnessfunction == 1:
                 if outcome == -1:
                     self.genomes[self.currentGenomeID][1].fitness = progress  # goes up until ~6500, and 50s for level
+
+                    """name = "../data/ai/genomes/" + "Zdir_G" + str(self.currentGeneration).zfill(3)+ "_" + str(progress).zfill(6) + ".pickle"
+                    with open(name, "wb") as f:
+                        pickle.dump(self.genomes[self.currentGenomeID][1], f)"""
+
                 elif outcome == +1:
                     self.genomes[self.currentGenomeID][1].fitness = 8000 + (6000-(time*200))
                     # Normal player needs between 30-45 seconds.
@@ -163,8 +168,30 @@ class AITrainHandler(LevelEndHandler):
                     if g.fitness > bestGen:
                         winner = g
                         bestGen = g.fitness
+                print("Best fitness in this generation was:" + str(bestGen))
                 with open(name, "wb") as f:
                     pickle.dump(winner, f)
+
+
+                """name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
+                winner = None
+                bestGen = 0
+                for i in range(self.genomeCount):
+                    if self.genomes[i][1].fitness > bestGen:
+                        winner = self.genomes[i][1]
+                        bestGen = self.genomes[i][1].fitness
+                with open(name, "wb") as f:
+                    pickle.dump(winner, f)"""
+
+                """for i in range(self.genomeCount):
+                    name = "../data/ai/genomes/" + "All_G" + str(self.currentGeneration).zfill(3)+ "_" + str(self.genomes[i][1].fitness).zfill(6) + ".pickle"
+                    with open(name, "wb") as f:
+                        pickle.dump(g, f)"""
+
+                for g in self.p.population.values():
+                    name = "../data/ai/genomes/" + "All_G" + str(self.currentGeneration).zfill(3)+ "_" + str(g.fitness).zfill(6) + ".pickle"
+                    with open(name, "wb") as f:
+                        pickle.dump(g, f)
 
 
                 # Track the best genome ever seen.
@@ -182,6 +209,7 @@ class AITrainHandler(LevelEndHandler):
                 # Writing output into file
                 # Note: This code got added by us and was not part of Population.run()
                 with open('../data/ai/genomes/summary.txt', 'a') as file:
+                    file.write("Gen-" + str(self.currentGeneration) + "\n")
                     for sid in sorted(self.p.species.species):
                         # sid = species ID
                         s = self.p.species.species[sid]  # species
