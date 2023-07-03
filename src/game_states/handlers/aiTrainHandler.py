@@ -211,7 +211,7 @@ class AITrainHandler(LevelEndHandler):
 
 
                 # Track the best genome ever seen.
-                if self.p.best_genome is None or best.fitness > self.p.best_genome.fitness:
+                if self.p.best_genome is None or self.p.best_genome.fitness is None or best.fitness > self.p.best_genome.fitness:
                     self.p.best_genome = best
 
                 if not self.p.config.no_fitness_termination:
@@ -240,7 +240,7 @@ class AITrainHandler(LevelEndHandler):
 
                 # Create the next generation from the current generation.
                 self.p.population = self.p.reproduction.reproduce(self.p.config, self.p.species,
-                                                              self.p.config.pop_size, self.p.generation)
+                                                                  self.p.config.pop_size, self.p.generation)
 
                 # Check for complete extinction.
                 if not self.p.species.species:
@@ -250,8 +250,8 @@ class AITrainHandler(LevelEndHandler):
                     # otherwise raise an exception.
                     if self.p.config.reset_on_extinction:
                         self.p.population = self.p.reproduction.create_new(self.p.config.genome_type,
-                                                                       self.p.config.genome_config,
-                                                                       self.p.config.pop_size)
+                                                                           self.p.config.genome_config,
+                                                                           self.p.config.pop_size)
                     else:
                         print("CompleteExtinctionException!!")
 

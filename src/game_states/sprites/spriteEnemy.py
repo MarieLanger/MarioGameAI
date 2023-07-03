@@ -37,8 +37,8 @@ class SpriteEnemy(SpriteBasic):
         """
         if self._withinStateMatrix(playerX, playerY, self.rect.x, self.rect.y):
             # Normalize positions
-            newx = self.rect.x - (playerX - 2*32)
-            newy = self.rect.y - (playerY - 6*32)
+            newx = self.rect.x - (playerX + self.normX)
+            newy = self.rect.y - (playerY + self.normY)
 
             # Save state in first matrix
             matrix[newy // 32, newx // 32, 0] = -1

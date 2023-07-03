@@ -48,8 +48,8 @@ class SpriteEndflag(SpriteBasic):
         for tile in range(height):
             if self._withinStateMatrix(playerX, playerY, self.rect.x, self.rect.y + 32*tile):
                 # Normalize positions
-                newx = self.rect.x - (playerX - 2*32)
-                newy = self.rect.y + 32*tile - (playerY - 6*32)
+                newx = self.rect.x - (playerX + self.normX)
+                newy = self.rect.y + 32*tile - (playerY + self.normY)
 
                 # Save state in first matrix
                 matrix[newy // 32, newx // 32, 1] = +1
