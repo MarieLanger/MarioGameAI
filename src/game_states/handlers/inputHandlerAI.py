@@ -5,6 +5,8 @@ import numpy as np
 import neat
 import pickle
 import time
+"""import random
+random.seed(42)"""
 
 from .inputHandler import InputHandler
 
@@ -21,6 +23,7 @@ class InputHandlerAI(InputHandler):
 
         self.genome = None
         self.net = None
+        self.testing = False
 
         # Load elements from config file
         local_dir = os.path.dirname(__file__)
@@ -101,8 +104,8 @@ class InputHandlerAI(InputHandler):
         IMPORTANT:
         If matrix is modified, the next line *AND* the _withinStateMatrix()-method in SpriteBasic needs to be modified!
         """
-        self.gameState = np.zeros((8,10,2))
-        #self.gameState = np.zeros((12,6,2))
+        #self.gameState = np.zeros((8,10,2))
+        self.gameState = np.zeros((12,6,2))
 
         # Idea: Delegate to sprites. Then sprites can decide whether or not they write or what they write
         for sprite in self.game.env_sprites.sprites():
@@ -124,3 +127,7 @@ class InputHandlerAI(InputHandler):
     def setGenome(self, genome):
         self.genome = genome
         self.net = neat.nn.FeedForwardNetwork.create(genome, self.config)
+        if self.testing:
+            #print(genome)
+            for k, ng in genome.nodes.items():
+                print(k, ng)

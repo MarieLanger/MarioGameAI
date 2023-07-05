@@ -40,6 +40,7 @@ class StateTitle(State):
 
         # Get all pickle files from "../data/ai/genomes/"
         #print(os.listdir("../data/ai/genomes/"))
+        self.aiSelection_choices = []
         for file in os.listdir("../data/ai/genomes/"):
             if file.endswith(".pickle"):
                 self.aiSelection_choices.append(str(file[0:-7]))
@@ -80,6 +81,13 @@ class StateTitle(State):
                 # Switch from main menu to submenu
                 if event.key == pygame.K_x:
                     self.subSelecting = not self.subSelecting
+                    self.aiSelection_choices = []
+                    for file in os.listdir("../data/ai/genomes/"):
+                        if file.endswith(".pickle"):
+                            self.aiSelection_choices.append(str(file[0:-7]))
+
+                    if self.aiSelection_selected >= len(self.aiSelection_choices):
+                        self.aiSelection_selected = 0
 
                 # Sub-menus
                 if self.subSelecting:
