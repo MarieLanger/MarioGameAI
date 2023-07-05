@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import neat
-import dill as pickle
+import pickle
 import time
 from pathlib import Path
 import shutil
