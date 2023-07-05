@@ -29,6 +29,7 @@ class AITrainHandler(LevelEndHandler):
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                   config_path)
 
+
         # Initialize population
         self.currentGeneration = 0
 
@@ -40,17 +41,26 @@ class AITrainHandler(LevelEndHandler):
         # When starting from checkpoint 5, then generation 5 is finished and we need to continue with generation 6
         #self.currentGeneration += 1
 
+
+
+
         self.genomes = list(self.p.population.items())
         self.genomeCount = len(self.genomes)
         self.currentGenomeID = 0
         self.maxGenerations = 50
+        self.count = 0
 
         # print(self.genomes)
         # print(self.genomeCount)
         print(self.genomes[self.currentGenomeID][1])
 
+        """with open('../data/ai/genomes/' + "Gen02_best" + ".pickle", "rb") as f:
+            genome = pickle.load(f)
+            self.inputHandler.testing = True
+            self.inputHandler.setGenome(genome)"""
+
         self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
-        print(self.inputHandler.genome)
+        #print(self.inputHandler.genome)
 
         print(self.p)
         print(self.p.population)
@@ -160,7 +170,7 @@ class AITrainHandler(LevelEndHandler):
         # If all genomes have been evaluated:
         else:
             # Else, go either to a new generation (if) or terminate training (else)
-            if self.currentGeneration < 102:
+            if self.currentGeneration < 101:
 
                 # Source of the following code: NEAT library's population.run() method.
 
@@ -186,7 +196,9 @@ class AITrainHandler(LevelEndHandler):
                         bestGen = g.fitness
                 print("Best fitness in this generation was:" + str(bestGen))
                 with open(name, "wb") as f:
+                    #pickle.dump(winner, f, 2)
                     pickle.dump(winner, f)
+                    print(winner)
 
 
                 """name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
@@ -208,6 +220,7 @@ class AITrainHandler(LevelEndHandler):
                     name = "../data/ai/genomes/" + "All_G" + str(self.currentGeneration).zfill(3)+ "_" + str(g.fitness).zfill(6) + ".pickle"
                     with open(name, "wb") as f:
                         pickle.dump(g, f)
+
 
 
                 # Track the best genome ever seen.
@@ -295,8 +308,8 @@ class AITrainHandler(LevelEndHandler):
                 with open(name, "wb") as f:
                     pickle.dump(winner, f)"""
 
-                for g in self.genomes:
-                    g[1].fitness = None
+                """for g in self.genomes:
+                    g[1].fitness = None"""
 
 
                 #self.genomes[self.currentGenomeID][1].fitness

@@ -49,17 +49,22 @@ class StateGame(State):
         # How to handle the end of a level
         if levelEndHandler == "Play":
             self.levelEndHandler = StandardPlayHandler(self)
+
+            # If AI showcase, set genome
+            if inputHandler == "AI":
+                # additional input is the name of the genome here
+                print("Testing", additional_input)
+                with open('../data/ai/genomes/' + str(additional_input) + ".pickle", "rb") as f:
+                    genome = pickle.load(f)
+                    self.inputHandler.testing = True
+                    self.inputHandler.setGenome(genome)
+
         elif levelEndHandler == "Train":
             # additional input is fitness function type here
             self.levelEndHandler = AITrainHandler(self, self.inputHandler, additional_input)
 
-        # If AI showcase, set genome
-        if inputHandler == "AI" and levelEndHandler == "Play":
-            # additional input is the name of the genome here
-            print("Testing", additional_input)
-            with open('../data/ai/genomes/' + additional_input + ".pickle", "rb") as f:
-                genome = pickle.load(f)
-                self.inputHandler.setGenome(genome)
+
+
 
 
         # Declaring game related variables -----------------------------------------------
