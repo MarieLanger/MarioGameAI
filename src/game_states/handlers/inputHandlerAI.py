@@ -104,8 +104,8 @@ class InputHandlerAI(InputHandler):
         IMPORTANT:
         If matrix is modified, the next line *AND* the _withinStateMatrix()-method in SpriteBasic needs to be modified!
         """
-        #self.gameState = np.zeros((8,10,2))
-        self.gameState = np.zeros((12,6,2))
+        self.gameState = np.zeros((8,10,2))
+        #self.gameState = np.zeros((12,6,2))
 
         # Idea: Delegate to sprites. Then sprites can decide whether or not they write or what they write
         for sprite in self.game.env_sprites.sprites():

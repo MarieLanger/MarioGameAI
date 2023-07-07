@@ -56,6 +56,7 @@ class StateTitle(State):
         self.aiType_selected = data['aiType_selected']
         self.selection_selected = data['selection_selected']
         self.aiSelection_selected = data['aiSelection_selected']
+        self.aiSelection_selected = 0
 
         if self.aiSelection_selected >= len(self.aiSelection_choices):
             self.aiSelection_selected = 0

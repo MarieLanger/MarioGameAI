@@ -70,13 +70,13 @@ class SpriteBasic(pygame.sprite.Sprite):
         :return:
         """
         # left x, right x, up y, down y
-        #within = (x >= playerX-2*32) and (x < playerX+8*32) and (y >= playerY-6*32) and (y < playerY + 2*32)
-        #self.normX = -2*32
-        #self.normY = -6*32
+        within = (x >= playerX-2*32) and (x < playerX+8*32) and (y >= playerY-6*32) and (y < playerY + 2*32)
+        self.normX = -2*32
+        self.normY = -6*32
 
-        within = (x >= playerX-1*32) and (x < playerX+5*32) and (y >= playerY-7*32) and (y < playerY + 5*32)
-        self.normX = -1*32
-        self.normY = -7*32
+        #within = (x >= playerX-1*32) and (x < playerX+5*32) and (y >= playerY-7*32) and (y < playerY + 5*32)
+        #self.normX = -1*32
+        #self.normY = -7*32
 
 
 
