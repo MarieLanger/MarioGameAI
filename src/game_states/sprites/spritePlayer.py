@@ -41,7 +41,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         """
         What forces get applied to the player, independent of the user inputs.
         """
-
         # Apply horizontal velocity to X position and adjust y-position, if necessary
         self.rect.y += self.velocityY
         self.enforceNoVerticalClipping()
@@ -81,7 +80,6 @@ class SpritePlayer(pygame.sprite.Sprite):
             bottomCol = sprite.rect.collidepoint((self.rect.bottomleft[0], self.rect.bottomleft[1] + 1)) or \
                         sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
                         sprite.rect.collidepoint((self.rect.bottomright[0] - 1, self.rect.bottomright[1] +1 ))
-                        # -1 got added so that the player doesn't stick to a right wall above 1-tile-wide holes
             if bottomCol:
                 break
 
@@ -91,7 +89,6 @@ class SpritePlayer(pygame.sprite.Sprite):
                      sprite.rect.collidepoint((self.rect.topleft[0], self.rect.topleft[1] + 1))
             if topCol:
                 break
-        #print("Bottom is touched:", bottomCol)
         return (topCol, bottomCol)
 
     def enforceNoVerticalClipping(self):
@@ -128,10 +125,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         Updates Y-velocity according to gravity. The terminal velocity is 6.
         """
         self.velocityY = min(6, self.velocityY + self.gravity)
-        """if self.velocityY + self.gravity > 6:
-            self.velocityY = 6
-        else:
-            self.velocityY += self.gravity"""
 
     def moveLeft(self, value=5):
         self.rect.x -= value
@@ -148,13 +141,13 @@ class SpritePlayer(pygame.sprite.Sprite):
         Jumping is only allowed if peach stands still (=has Y-velocity 0 at the moment)
         """
         if self.velocityY == 0:
-            self.velocityY = -13 #-11
+            self.velocityY = -13
 
     def jumpKeyReleased(self):
         """
         The jump height is dependent on how long the key has been pressed.
         """
-        if self.velocityY < -3 : #-5:
+        if self.velocityY < -3 :
             self.velocityY = self.velocityY / 2 + 1
 
     def enemyHit(self):
@@ -195,7 +188,6 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.peekState().removeAppearance()
         if immunityreset:
             self.image.fill((255, 216, 240))
-        # self.states.pop()
 
     def peekState(self):
         """
@@ -211,7 +203,7 @@ class SpritePlayer(pygame.sprite.Sprite):
 
 class PlayerState():
     """
-    The base class for the states that hold the different states of Peach:
+    The base class for the states that hold the different states of Player:
     - Normal tiny
     - Bigger
     - Star
@@ -263,7 +255,7 @@ class PlayerState():
 
 class PlayerStateNormal(PlayerState):
     """
-    Class that holds the normal state of Peach
+    Class that holds the normal state of Player
     """
 
     def __init__(self, player):
@@ -292,7 +284,7 @@ class PlayerStateNormal(PlayerState):
 
 class PlayerStateMushroom(PlayerState):
     """
-    Class that holds the bigger state of Peach. See mushroom item documentation (spriteMushroom.py)
+    Class that holds the bigger state of Player. See mushroom item documentation (spriteMushroom.py)
     """
 
     def __init__(self, player):
@@ -332,7 +324,7 @@ class PlayerStateMushroom(PlayerState):
 
 class PlayerStateStar(PlayerState):
     """
-    Class that holds the bigger state of Peach
+    Class that holds the bigger state of Player
     """
 
     def __init__(self, player):

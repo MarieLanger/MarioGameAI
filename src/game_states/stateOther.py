@@ -10,8 +10,7 @@ from .state import State
 
 class StateOther(State):
     """
-    The title state for when the game gets started.
-    Allows the user to navigate to other states, such as the gameplay-state, as well as to select options.
+    A small and simple bonus state, since the project is also about game development.
     """
 
     def __init__(self, game):

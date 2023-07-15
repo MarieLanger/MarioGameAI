@@ -30,6 +30,7 @@ class StateLevelCompleted(State):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    # New level
                     self.game.exitCurrentState()
                     self.game.stateMachine.peek().initializeLevel()
         return None

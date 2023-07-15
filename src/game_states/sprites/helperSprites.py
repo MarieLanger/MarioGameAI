@@ -10,7 +10,7 @@ class HelperSprite(pygame.sprite.Sprite):
 
 class SpriteButton(HelperSprite):
     """
-    Renders buttons onto the screen and they turn red when pressed.
+    Renders buttons onto the screen and they show visually when pressed.
     """
     def __init__(self, x, y):
         HelperSprite.__init__(self)
@@ -47,8 +47,6 @@ class FallingHelperSprite(HelperSprite):
     def __init__(self, player, game):
         HelperSprite.__init__(self)
         self.image = pygame.Surface((320 * 2, 60))
-        #self.image.fill((255, 105, 180))
-        #self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect()
         self.rect.topleft = (0, 420)
 
