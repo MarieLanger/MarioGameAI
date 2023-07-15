@@ -6,6 +6,7 @@ from .state import State
 class StateGameOver(State):
     """
     State for the game over screen.
+    Restarts the level after being exited.
     """
 
     def __init__(self, game, prev_state):
@@ -25,6 +26,7 @@ class StateGameOver(State):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    # Restart level
                     self.game.exitCurrentState()
                     self.game.stateMachine.peek().initializeLevel()
         return None

@@ -6,6 +6,10 @@ class InputHandler():
         self.game = game
 
     def handleInputs(self):
+        """
+        Defined how inputs get handled. These are either keyboard inputs or AI inputs.
+        :return:
+        """
         pass
 
 

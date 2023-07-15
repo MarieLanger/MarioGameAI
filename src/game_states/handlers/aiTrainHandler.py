@@ -29,19 +29,14 @@ class AITrainHandler(LevelEndHandler):
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                   config_path)
 
-
         # Initialize population
+        # When starting from a checkpoint, one can modify this variable to do so
         self.currentGeneration = 0
 
         if self.currentGeneration == 0:
             self.p = neat.Population(self.config)
         else:
             self.p = neat.Checkpointer.restore_checkpoint('../data/ai/genomes/neat-checkpoint-' + str(self.currentGeneration))
-
-        # When starting from checkpoint 5, then generation 5 is finished and we need to continue with generation 6
-        #self.currentGeneration += 1
-
-
 
 
         self.genomes = list(self.p.population.items())
@@ -52,7 +47,7 @@ class AITrainHandler(LevelEndHandler):
 
         # print(self.genomes)
         # print(self.genomeCount)
-        print(self.genomes[self.currentGenomeID][1])
+        #print(self.genomes[self.currentGenomeID][1])
 
         """with open('../data/ai/genomes/' + "Gen02_best" + ".pickle", "rb") as f:
             genome = pickle.load(f)
@@ -60,26 +55,20 @@ class AITrainHandler(LevelEndHandler):
             self.inputHandler.setGenome(genome)"""
 
         self.inputHandler.setGenome(self.genomes[self.currentGenomeID][1])
+
         #print(self.inputHandler.genome)
-
-        print(self.p)
-        print(self.p.population)
-        print(self.p.population.items())
-        print(len(self.p.population.items()))
+        #print(self.p)
+        #print(self.p.population)
+        #print(self.p.population.items())
+        #print(len(self.p.population.items()))
         #print(list(self.p.population.items())[0][1])
-        print(list(self.p.population.items())[0][1].fitness)
-
+        #print(list(self.p.population.items())[0][1].fitness)
         #list(self.p.population.items())[0][1] = (1,2)
         #print(list(self.p.population.items())[0][1])
-
         #list(self.p.population.items())[0][1].fitness = 10
 
         self.genomes[0][1].fitness = 0
-        print(list(self.p.population.items())[0][1].fitness)
-
-
-
-
+        #print(list(self.p.population.items())[0][1].fitness)
 
         # Initialize reporters
         self.p.add_reporter(neat.StdOutReporter(True))
@@ -93,10 +82,6 @@ class AITrainHandler(LevelEndHandler):
 
 
 
-
-
-
-
     def handleLevelEnd(self, outcome, progress, time, coins, enemies):
         """
         Evaluate genomes and handle the population and the training as a whole.
@@ -106,10 +91,13 @@ class AITrainHandler(LevelEndHandler):
 
         NOTE:
         This method is based on the NEAT library's population.run()-method and the code called after a population
-        has finished evaluating is taken from it.
+        has finished evaluating is taken from it. Credits go to the authors of the NEAT Python library Cesar Gomes
+        Miguel, Carolina Feher da Silva and Marcio Lobo Netto (2015). (Copyright 2015-2019, CodeReclaimers,
+        LLC Revision 63f4cf81).
         population.run()'s first parameter is a method. In this method, a game loop is created and the game is run.
         However, in our case, the NEAT algorithm is run from inside the program, and not vice versa.
         (=There is already a game loop). To run NEAT from within an existing game loop, the method got altered.
+        Further, to be able to print out more detailed statistics, this method had to be altered.
         The source code can be found here:
         https://neat-python.readthedocs.io/en/latest/_modules/population.html
 
@@ -173,6 +161,7 @@ class AITrainHandler(LevelEndHandler):
             if self.currentGeneration < 101:
 
                 # Source of the following code: NEAT library's population.run() method.
+                # For credits please see above in method description!
 
                 # Gather and report statistics.
                 best = None
@@ -185,7 +174,7 @@ class AITrainHandler(LevelEndHandler):
                 self.p.reporters.post_evaluate(self.p.config, self.p.population, self.p.species, best)
 
 
-                # own code: Save best genome in this generation
+                # Own code: Save best genome in this generation
                 winner = None
                 bestGen = 0
                 name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
@@ -199,7 +188,6 @@ class AITrainHandler(LevelEndHandler):
                     #pickle.dump(winner, f, 2)
                     pickle.dump(winner, f)
                     print(winner)
-
 
                 """name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
                 winner = None
@@ -276,9 +264,9 @@ class AITrainHandler(LevelEndHandler):
                 """
                 reporters.end_generation() makes the --- --- print statements
                 
-                In the above, the reproducing happens before the species get speciated!!
+                In the above, the reproducing happens before the species get speciated!
                 Hence, at this point there are new individuals in a species for which there hasn't been a fitness set yet.
-                The fitness of a species which gets printed is from the generation beforehand!! 
+                The fitness of a species which gets printed is from the generation beforehand.
                 If a species has 4 members in iteration X and 7 in iteration X+1,
                 then what gets printed is:
                 The species has 7 members and has the fitness from these 4 individuals.
@@ -301,7 +289,7 @@ class AITrainHandler(LevelEndHandler):
 
 
 
-                # Note: Starting from here, the code got added by us and was not part of Population.run()
+                # Note: Starting from here, all remaining code got added by us and was not part of Population.run()
 
                 """# Save the best genome in folder
                 name = "../data/ai/genomes/" + "Gen" + str(self.currentGeneration).zfill(2) + "_best.pickle"
@@ -310,7 +298,6 @@ class AITrainHandler(LevelEndHandler):
 
                 """for g in self.genomes:
                     g[1].fitness = None"""
-
 
                 #self.genomes[self.currentGenomeID][1].fitness
 

@@ -33,20 +33,6 @@ class InputHandlerAI(InputHandler):
                              config_path)
 
 
-        """
-        Within eval_genomes, the fitness is modified.
-        Hence, run() can stop early if the max fitness was reached.
-        Idea:
-        Within eval_genomes, iterate through genomes
-        - For each genome, play 1 level
-        - After level got finished, assess fitness, mutate and recombine
-        
-        For genome in genomes
-        - Restart level
-        - Create network
-        - handleInputs() is basically moveAIPaddles()
-        - Within handleInputs(), game state gets queried
-        """
 
 
     def handleInputs(self):
@@ -59,8 +45,6 @@ class InputHandlerAI(InputHandler):
 
         # Put states into net and calculate output
         output = self.net.activate(self.gameState.flatten('C').tolist() + self.itemState.flatten('C').tolist())
-        #print(output)
-        #decision = output.index(max(output))
 
         self.game.leftKeyHold = False
         self.game.rightKeyHold = False
@@ -78,12 +62,6 @@ class InputHandlerAI(InputHandler):
         if output[1] > 5:
             self.game.upKeyHold = True
 
-        """if decision == 0:
-            self.game.leftKeyHold = True
-        elif decision == 1:
-            self.game.upKeyHold = True
-        elif decision == 2:
-            self.game.rightKeyHold = True"""
 
 
     def _getItemState(self):
@@ -92,7 +70,7 @@ class InputHandlerAI(InputHandler):
             self.itemState[state.getID()] = 1
 
     def _getGameState(self):
-        # MATRIX (for now):
+        # W-Matrix:
         # 2 tiles behind player, 7 tiles in front of player --> x:10
         # 2 tiles under player, 5 tiles above player --> y: 8
 
@@ -111,9 +89,6 @@ class InputHandlerAI(InputHandler):
         for sprite in self.game.env_sprites.sprites():
             sprite.writeState(self.gameState, playerX, playerY)
 
-        #print(self.gameState[:,:,0])
-
-        #print(self.gameState[:,:,1])
 
     def _getUserInputs(self):
         for event in pygame.event.get():
@@ -128,6 +103,5 @@ class InputHandlerAI(InputHandler):
         self.genome = genome
         self.net = neat.nn.FeedForwardNetwork.create(genome, self.config)
         if self.testing:
-            #print(genome)
             for k, ng in genome.nodes.items():
                 print(k, ng)

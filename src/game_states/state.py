@@ -8,7 +8,7 @@ class State():
     def __init__(self,game):
         """
         Initializes the state.
-        :param game: All states have a reference to the game that the state is in
+        :param game: All states have a reference to the program that the state is in.
         """
         self.game = game
 

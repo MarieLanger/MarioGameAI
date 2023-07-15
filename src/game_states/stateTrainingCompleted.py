@@ -6,8 +6,8 @@ from .state import State
 
 class StateTrainingCompleted(State):
     """
-    State for when a level got completed.
-    Allows to enter new level by adjusting the main state stack.
+    State for when the training got completed.
+    Returns to the title screen when being exited.
     """
 
     def __init__(self, game, prev_state):
@@ -29,6 +29,7 @@ class StateTrainingCompleted(State):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    # Return to title
                     self.game.exitCurrentState()
                     self.game.exitCurrentState()
         return None

@@ -20,7 +20,6 @@ class StateTitle(State):
     def __init__(self, game):
         State.__init__(self, game)
 
-
         # Initialize all the text
         self.text = "SUPER M[ai]RIO BROS"
         self.text_pos = (80, 20)  # x-position(low:left,high:right)   y-position (low:up, high:down)
@@ -33,7 +32,7 @@ class StateTitle(State):
         self.menuSelection_col = (255, 105, 180)  # pink
 
         # Sub-menu selections
-        self.level_choices = ("all", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        self.level_choices = (0, 1, 2, 3, 4, 5)
         self.aiType_choices = ("Train AI", "Test AI")
         self.selection_choices = ("speedrun", "speedrun + coins", "speedrun + coins + enemies")
         self.aiSelection_choices = []
@@ -50,16 +49,14 @@ class StateTitle(State):
 
         # Load titleState.json in data folder and adjust model according to it
         data = json.load(open('../data/titleState.json'))
-        # these are all indices of the above lists
+        # These are all indices of the above lists
         self.menuSelection = data['menuSelection']
         self.level_selected = data['level_selected']
         self.aiType_selected = data['aiType_selected']
         self.selection_selected = data['selection_selected']
         self.aiSelection_selected = data['aiSelection_selected']
         self.aiSelection_selected = 0
-
-        if self.aiSelection_selected >= len(self.aiSelection_choices):
-            self.aiSelection_selected = 0
+        # Set aiSelection always to zero, since the amount of networks inside the folder can vary.
 
         # Initialize fonts
         pygame.font.init()
@@ -67,9 +64,6 @@ class StateTitle(State):
         self.smallFont = pygame.font.SysFont('Comic Sans MS', 20)
         self.mediumFont = pygame.font.SysFont('Comic Sans MS', 30)
         self.bigFont = pygame.font.SysFont('Comic Sans MS', 45)
-
-
-
 
 
     def update(self):
@@ -95,9 +89,9 @@ class StateTitle(State):
                     # Human input
                     if self.menuSelection == 0:
                         if event.key == pygame.K_LEFT:
-                            self.level_selected = (self.level_selected - 1) % 10
+                            self.level_selected = (self.level_selected - 1) % 6
                         if event.key == pygame.K_RIGHT:
-                            self.level_selected = (self.level_selected + 1) % 10
+                            self.level_selected = (self.level_selected + 1) % 6
                     # AI input
                     if self.menuSelection == 1:
                         add = 0
@@ -141,10 +135,9 @@ class StateTitle(State):
                         elif self.menuSelection == 2:
                             return StateOther(self.game)
 
-
-
                 # Finally, save everything in a json file
                 self._saveTitleState()
+
         return None
 
     def display(self, screen):
@@ -226,10 +219,7 @@ class StateTitle(State):
         Happens automatically as soon as inputs got changed.
         """
         with open('../data/titleState.json', 'wb') as f:
-            if self.level_selected == 0:
-                level = 1
-            else:
-                level = self.level_selected
+            level = self.level_selected
             data = {"menuSelection": self.menuSelection,
                     "level_selected": self.level_selected,
                     "level": level,
