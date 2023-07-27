@@ -16,6 +16,7 @@ class SpriteStar(SpriteItem):
 
     def __init__(self, y_pos, x_pos, player, blockgroup):
         SpriteItem.__init__(self, y_pos, x_pos, player)
+        random.seed(10)
 
         # References
         self.blockGroup = blockgroup

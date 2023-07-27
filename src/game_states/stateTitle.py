@@ -102,7 +102,7 @@ class StateTitle(State):
                         if self.subSelection_selected == 0:
                             self.aiType_selected = (self.aiType_selected + add) % 2
                         elif self.subSelection_selected == 1:
-                            self.level_selected = (self.level_selected + add) % 10
+                            self.level_selected = (self.level_selected + add) % 6
                         elif self.subSelection_selected == 2:
                             if self.aiType_selected == 0:
                                 self.selection_selected = (self.selection_selected + add) % len(self.selection_choices)
@@ -177,6 +177,7 @@ class StateTitle(State):
             text1 = "  • Select level: " + str(self.level_choices[self.level_selected])
             if self.subSelection_selected == 0 and self.subSelecting:
                 col = cols[1]
+
             else:
                 col = cols[0]
             self._displayText(text1, col, (20, 250), self.smallFont, screen)
