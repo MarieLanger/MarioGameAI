@@ -81,7 +81,6 @@ class SpriteBasic(pygame.sprite.Sprite):
         #self.normY = -7*32
 
 
-
         return within
 
     """
