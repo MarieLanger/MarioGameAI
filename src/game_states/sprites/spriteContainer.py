@@ -30,7 +30,8 @@ class SpriteContainer(SpriteBlock):
         self.contentID = contentID
 
         # Block-color
-        self.image.fill((63, 234, 255))
+        import sys
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/mushroom/1.png')
 
         # Containers belong to the block-group, hence, cannot collide with the player.
         # Solution: Creating a colliderect that is wider vertically and check collisions with this.

@@ -1,6 +1,7 @@
 import random
 import pygame
 from .spriteItem import SpriteItem
+import sys
 
 
 class SpriteStar(SpriteItem):
@@ -31,6 +32,7 @@ class SpriteStar(SpriteItem):
 
         # When activated, movement starts, prevents moving from the very start when still in container
         self.activated = False
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/mushroom/star.png')
 
     def update(self):
         """

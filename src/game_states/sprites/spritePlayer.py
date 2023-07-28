@@ -1,4 +1,6 @@
 import pygame
+from .importFolder import import_folder
+import sys
 
 
 class SpritePlayer(pygame.sprite.Sprite):
@@ -19,10 +21,16 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.game = game
 
         # Draw the player
-        self.image = pygame.Surface((16 * 2, 16 * 2))
-        self.image.fill((255, 105, 180))
+        self.import_character_assets()
+        self.frame_index = 0
+        self.animation_speed = 0.15
+        self.initial_stage = self.animations['idle'][self.frame_index]
+        self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect()  # self.image.get_rect() is =Rect(0,0,32,32)
         self.rect.topleft = (x_pos, y_pos)
+
+        # For animation direction (Jumping, left, right, falling)
+        self.direction = pygame.math.Vector2(0, 0)
 
         # Jumping variables
         self.velocityY = 0
@@ -32,10 +40,41 @@ class SpritePlayer(pygame.sprite.Sprite):
         self.immunity = False
         self.immunityCounter = 0
 
+        # player status
+        self.status = 'idle'
+
         # Player has a state-stack where all the previous states after getting items are stored. Stack data structure.
         self.states = []
         self.states.append(PlayerStateNormal(self))
 
+    def import_character_assets(self):
+        character_path = sys.path[1] + '/data/Graphics/CharacterMini/'
+        self.animations = {'idle': [], 'run': [], 'jump': [], 'fall': []}
+
+        for animation in self.animations.keys():
+            full_path = character_path + animation
+            self.animations[animation] = import_folder(full_path)
+
+    def animate(self):
+        animation = self.animations[self.status]
+
+        # loop over frame index
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(animation):
+            self.frame_index = 0
+
+        self.image = animation[int(self.frame_index)]
+
+    def get_status(self):
+        if self.direction.y < 0:
+            self.status = 'jump'
+        elif self.direction.y > 0:
+            self.status = 'fall'
+        else:
+            if self.direction.x != 0:
+                self.status = 'run'
+            else:
+                self.status = 'idle'
 
     def update(self):
         """
@@ -51,15 +90,15 @@ class SpritePlayer(pygame.sprite.Sprite):
             if self.immunityCounter == 70:
                 self.immunity = False
                 self.immunityCounter = 0
-                self.image.fill((255, 105, 180))
 
         # States need to be updated too (star removes itself after a while!)
         self.peekState().updateState()
+        self.get_status()
+        self.animate()
 
     """
     Below: What sprites do after player inputs -----------------------------------------------------------------
     """
-
     def checkCollisions_blocks(self):
         """
         Checks for collisions between player and all sprites in the block-group.
@@ -79,7 +118,7 @@ class SpritePlayer(pygame.sprite.Sprite):
             # bottomleft --> (x,y)
             bottomCol = sprite.rect.collidepoint((self.rect.bottomleft[0], self.rect.bottomleft[1] + 1)) or \
                         sprite.rect.collidepoint((self.rect.midbottom[0], self.rect.midbottom[1] + 1)) or \
-                        sprite.rect.collidepoint((self.rect.bottomright[0] - 1, self.rect.bottomright[1] +1 ))
+                        sprite.rect.collidepoint((self.rect.bottomright[0] - 1, self.rect.bottomright[1] + 1))
             if bottomCol:
                 break
 
@@ -147,7 +186,7 @@ class SpritePlayer(pygame.sprite.Sprite):
         """
         The jump height is dependent on how long the key has been pressed.
         """
-        if self.velocityY < -3 :
+        if self.velocityY < -3:
             self.velocityY = self.velocityY / 2 + 1
 
     def enemyHit(self):
@@ -170,7 +209,6 @@ class SpritePlayer(pygame.sprite.Sprite):
                     self.removeState(True)
         return player_hit  # True if player got hit, False if player "hits back" via star
 
-
     def addState(self, state):
         """
         Adds an item state according to stack data structure.
@@ -184,10 +222,9 @@ class SpritePlayer(pygame.sprite.Sprite):
                               This is sometimes necessary, e.g. to handle the removal of the star-state.
         """
         self.immunity = immunityreset
-
         self.peekState().removeAppearance()
         if immunityreset:
-            self.image.fill((255, 216, 240))
+            pass
 
     def peekState(self):
         """
@@ -197,8 +234,6 @@ class SpritePlayer(pygame.sprite.Sprite):
 
     def getAllStates(self):
         return self.states
-
-
 
 
 class PlayerState():
@@ -281,7 +316,6 @@ class PlayerStateNormal(PlayerState):
             newstate.changeAppearance()
 
 
-
 class PlayerStateMushroom(PlayerState):
     """
     Class that holds the bigger state of Player. See mushroom item documentation (spriteMushroom.py)
@@ -298,12 +332,6 @@ class PlayerStateMushroom(PlayerState):
     def handleEnemyCollision(self):
         return True
 
-    def handleItemCollision(self, itemtype):
-        if itemtype == "star":
-            newstate = PlayerStateStar(self.player)
-            self.player.addState(newstate)
-            newstate.changeAppearance()
-
     def changeAppearance(self):
         tmp = self.player.rect.bottomleft
         self.player.image = pygame.Surface(self.player.peekState().size)
@@ -317,6 +345,12 @@ class PlayerStateMushroom(PlayerState):
         self.player.image = pygame.Surface(self.player.peekState().size)
         self.player.rect = self.player.image.get_rect()
         self.player.rect.bottomleft = tmp
+
+    def handleItemCollision(self, itemtype):
+        if itemtype == "star":
+            newstate = PlayerStateStar(self.player)
+            self.player.addState(newstate)
+            newstate.changeAppearance()
 
     def updateState(self):
         pass
@@ -365,5 +399,3 @@ class PlayerStateStar(PlayerState):
         if self.counter > 1000:
             self.player.removeState(False)
             self.player.states.pop()
-
-

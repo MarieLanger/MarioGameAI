@@ -1,6 +1,8 @@
 import pygame
-
+import sys
 from .spriteItem import SpriteItem
+from .importFolder import import_folder
+
 
 class SpriteCoin(SpriteItem):
     """
@@ -22,6 +24,29 @@ class SpriteCoin(SpriteItem):
 
         # References
         self.game = game
+        self.import_character_assets()
+        self.frame_index = 0
+        self.animation_speed = 0.15
+        self.status = 'Coin'
+
+    def import_character_assets(self):
+        character_path = sys.path[1] + '/data/Graphics/'
+        self.animations = {'Coin': []}
+
+        for animation in self.animations.keys():
+            full_path = character_path + animation
+            self.animations[animation] = import_folder(full_path)
+
+
+    def animate(self):
+        animation = self.animations[self.status]
+
+        # loop over frame index
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(animation):
+            self.frame_index = 0
+
+        self.image = animation[int(self.frame_index)]
 
     def update(self):
         """
@@ -31,6 +56,8 @@ class SpriteCoin(SpriteItem):
         if pygame.sprite.collide_rect(self, self.player):
             self.game.increaseCoinCounter()
             self.kill()
+
+        self.animate()
 
     def writeState(self, matrix, playerX, playerY):
         """

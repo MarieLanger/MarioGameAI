@@ -20,7 +20,8 @@ class SpriteGoomba(SpriteEnemy):
         SpriteEnemy.__init__(self, y_pos, x_pos, player, game)
 
         # Enemies have color
-        self.image.fill((141, 2, 31))
+        import sys
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/goomba/1.png')
 
         # References (self.player already got declared in superclass)
         self.blockGroup = blockgroup

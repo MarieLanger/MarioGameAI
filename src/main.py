@@ -25,7 +25,7 @@ class Main:
         # Game canvas is w=320, h=240
         self.gameCanvas = pygame.Surface((WIDTH, HEIGHT))
 
-        # Upscale to: w=640, h=480
+        # Upscale to:g w=640, h=480
         self.screen = pygame.display.set_mode((WIDTH * 2, HEIGHT * 2))
 
         # Initialize clock

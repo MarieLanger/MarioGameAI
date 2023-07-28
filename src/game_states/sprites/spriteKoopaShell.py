@@ -24,10 +24,11 @@ class SpriteKoopaShell(SpriteGoomba):
         self.enemyGroup = enemygroup
 
         # Shape and color of Koopa shell
-        self.image = pygame.Surface((28, 17), pygame.SRCALPHA)
+        self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
         pygame.draw.circle(self.image, (141, 2, 31), (14, 14), 14, 28)
         self.rect = self.image.get_rect(topleft=(x_pos, y_pos))
-        self.image.fill((141, 2, 31))
+        import sys
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/koopa/2.png')
 
         # Make a copy of the player's previous state
         self.playerPrevRect = self.player.rect.copy()

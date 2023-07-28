@@ -482,9 +482,6 @@ class StateGame(State):
         else:
             self.level += 1
 
-
-
-
     def display(self, screen):
         screen.fill('black')
 

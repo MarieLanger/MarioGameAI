@@ -1,4 +1,5 @@
 from .spriteBasic import SpriteBasic
+import pygame, sys
 
 
 class SpriteBlock(SpriteBasic):
@@ -13,7 +14,7 @@ class SpriteBlock(SpriteBasic):
         SpriteBasic.__init__(self, y_pos, x_pos)
 
         # Block has a color
-        self.image.fill((98, 114, 126))
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/Levels/1.png')
 
     def writeState(self, matrix, playerX, playerY):
         """

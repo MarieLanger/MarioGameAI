@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 
 from .spriteItem import SpriteItem
@@ -26,6 +28,7 @@ class SpriteMushroom(SpriteItem):
 
         # When activated, movement starts, prevents moving from the very start when still in container
         self.activated = False
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/mushroom/2.png')
 
     def activate(self):
         self.activated = True

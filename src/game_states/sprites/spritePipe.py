@@ -16,7 +16,8 @@ class SpritePipe(SpriteBlock):
 
         # Redoing drawing because the height differs
         self.image = pygame.Surface((16 * 2, height))
-        self.image.fill((46, 133, 87))
+        import sys
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/Pipe/bottom.png')
         self.rect = self.image.get_rect()
         self.rect.topleft = (x_pos, y_pos)
 

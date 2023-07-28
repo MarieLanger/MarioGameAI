@@ -1,5 +1,6 @@
 import pygame
-
+import sys
+from .importFolder import import_folder
 from .spriteEnemy import SpriteEnemy
 
 
@@ -19,11 +20,31 @@ class SpritePiranha(SpriteEnemy):
         # Piranha flower is 2 tiles high
         self.image = pygame.Surface((16 * 2, 32 * 2))
         self.rect = self.image.get_rect()
-        self.rect.topleft = (x_pos+16, y_pos)
-        self.image.fill((141, 2, 31))
-
+        self.rect.topleft = (x_pos, y_pos)
 
         self.time = 0
+        self.import_character_assets()
+        self.frame_index = 0
+        self.animation_speed = 0.15
+        self.status = 'flower'
+
+    def import_character_assets(self):
+        character_path = sys.path[1] + '/data/Graphics/'
+        self.animations = {'flower': []}
+
+        for animation in self.animations.keys():
+            full_path = character_path + animation
+            self.animations[animation] = import_folder(full_path)
+
+    def animate(self):
+        animation = self.animations[self.status]
+
+        # loop over frame index
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(animation):
+            self.frame_index = 0
+
+        self.image = animation[int(self.frame_index)]
 
     def update(self):
         """
@@ -51,6 +72,8 @@ class SpritePiranha(SpriteEnemy):
             self.time = 0
 
         self.time += 1
+
+        self.animate()
 
 
     def writeState(self, matrix, playerX, playerY):

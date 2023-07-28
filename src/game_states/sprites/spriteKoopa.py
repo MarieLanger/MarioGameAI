@@ -24,14 +24,15 @@ class SpriteKoopa(SpriteGoomba):
         self.envGroup = envgroup
 
         # Koopa is bigger than Goomba
-        self.image = pygame.Surface((16 * 2, 32 * 2))
+        self.image = pygame.Surface((32, 32))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x_pos, y_pos)
-        self.image.fill((141, 2, 31))
+
+        import sys
+        self.image = pygame.image.load(sys.path[1] + '/data/Graphics/koopa/1.png')
 
         # Make a copy of the player's previous state
         self.playerPrevRect = self.player.rect.copy()
-
 
     def update(self):
         """
